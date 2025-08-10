@@ -199,7 +199,8 @@ def wait_for_upload_completion(page, file_extension):
 def process_gemini_session(page, system_instruction, user_prompt, file_path):
     """Execute the complete Gemini AI Studio workflow."""
     print("[INFO] Starting Gemini AI Studio session...")
-    page.goto("https://aistudio.google.com/prompts/new_chat", wait_until="networkidle")
+    page.goto("https://aistudio.google.com/prompts/new_chat")
+    page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT+DEFAULT_WAIT_TIMEOUT+DEFAULT_WAIT_TIMEOUT)
     dismiss_popup(page)
     configure_system_instructions(page, system_instruction)
     configure_user_prompt(page, user_prompt)
