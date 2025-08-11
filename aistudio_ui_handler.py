@@ -1,53 +1,482 @@
-from browser_manager import BrowserManager
-from browser_manager.browser_config import BrowserConfig
+"""
+Google AI Studio Automation Module
+Handles automated interactions with Google AI Studio for content generation
+"""
+
+import os
+import time
+import subprocess
+from pathlib import Path
+from typing import Optional, Union, Dict, Any
+from functools import partial
+
 import json_repair
 from dotenv import load_dotenv
-import os
+from browser_manager import BrowserManager
+from browser_manager.browser_config import BrowserConfig
 
+# Load environment variables
 if os.path.exists(".env"):
-    load_dotenv()
+	load_dotenv()
 
-# --- Global Selectors ---
-SELECTORS = {
-    'system_instructions_button': 'button[aria-label="System instructions"]',
-    'system_instructions_textarea': 'textarea[aria-label="System instructions"]',
-    'user_prompt_textarea': 'div.text-input-wrapper textarea',
-    'run_button': 'button[aria-label="Run"]',
-    'close_button': 'button[aria-label="close"]',
-    'insert_assets_button': 'button[aria-label="Insert assets such as images, videos, files, or audio"]',
-    'file_input': 'input[type="file"]',
-    'copyright_acknowledge_button': 'button[aria-label="Agree to the copyright acknowledgement"]',
-    'code_blocks': 'code'
-}
+class AIStudioLogger:
+	"""Enhanced logging with step tracking"""
+	
+	@staticmethod
+	def info(message: str, step: Optional[str] = None):
+		prefix = f"[STEP {step}] " if step else "[INFO] "
+		print(f"{prefix}{message}")
+	
+	@staticmethod
+	def success(message: str, step: Optional[str] = None):
+		prefix = f"[STEP {step}] ✓ " if step else "[SUCCESS] "
+		print(f"{prefix}{message}")
+	
+	@staticmethod
+	def warning(message: str, step: Optional[str] = None):
+		prefix = f"[STEP {step}] ⚠️  " if step else "[WARNING] "
+		print(f"{prefix}{message}")
+	
+	@staticmethod
+	def error(message: str, step: Optional[str] = None):
+		prefix = f"[STEP {step}] ❌ " if step else "[ERROR] "
+		print(f"{prefix}{message}")
+	
+	@staticmethod
+	def debug(message: str):
+		print(f"[DEBUG] {message}")
 
-# File type to removal button mapping
-FILE_TYPE_SELECTORS = {
-    ".mp4": 'button[aria-label="Remove video"]',
-    ".mov": 'button[aria-label="Remove video"]',
-    ".avi": 'button[aria-label="Remove video"]',
-    ".mkv": 'button[aria-label="Remove video"]',
-    ".mp3": 'button[aria-label="Remove audio"]',
-    ".wav": 'button[aria-label="Remove audio"]',
-    ".flac": 'button[aria-label="Remove audio"]',
-    ".aac": 'button[aria-label="Remove audio"]',
-    ".jpg": 'button[aria-label="Remove image"]',
-    ".jpeg": 'button[aria-label="Remove image"]',
-    ".png": 'button[aria-label="Remove image"]',
-    ".gif": 'button[aria-label="Remove image"]',
-    ".webp": 'button[aria-label="Remove image"]',
-    ".pdf": 'button[aria-label="Remove document"]',
-    ".txt": 'button[aria-label="Remove document"]',
-    ".doc": 'button[aria-label="Remove document"]',
-    ".docx": 'button[aria-label="Remove document"]'
-}
 
-# --- Configuration ---
-DEFAULT_WAIT_TIMEOUT = 2000
-UPLOAD_TIMEOUT = 20000
-RUN_TIMEOUT = 60 * 60 * 1000  # 1 hour
+class AIStudioSelectors:
+	"""Centralized UI selectors for Google AI Studio"""
+	
+	# Main interface elements
+	SYSTEM_INSTRUCTIONS_BUTTON = 'button[aria-label="System instructions"]'
+	SYSTEM_INSTRUCTIONS_TEXTAREA = 'textarea[aria-label="System instructions"]'
+	USER_PROMPT_TEXTAREA = 'div.text-input-wrapper textarea'
+	RUN_BUTTON = 'button[aria-label="Run"]'
+	CLOSE_BUTTON = 'button[aria-label="close"]'
+	
+	# File upload elements
+	INSERT_ASSETS_BUTTON = 'button[aria-label="Insert assets such as images, videos, files, or audio"]'
+	FILE_INPUT = 'input[type="file"]'
+	FILE_INPUT_MANUAL_UPLOAD = 'button[aria-label="Upload File"]'
+	COPYRIGHT_ACKNOWLEDGE_BUTTON = 'button[aria-label="Agree to the copyright acknowledgement"]'
+	
+	# Content extraction
+	CODE_BLOCKS = 'code'
+	
+	# File type removal buttons (for upload confirmation)
+	FILE_TYPE_REMOVAL_SELECTORS = {
+		# Video files
+		".mp4": 'button[aria-label="Remove video"]',
+		".mov": 'button[aria-label="Remove video"]',
+		".avi": 'button[aria-label="Remove video"]',
+		".mkv": 'button[aria-label="Remove video"]',
+		
+		# Audio files
+		".mp3": 'button[aria-label="Remove audio"]',
+		".wav": 'button[aria-label="Remove audio"]',
+		".flac": 'button[aria-label="Remove audio"]',
+		".aac": 'button[aria-label="Remove audio"]',
+		
+		# Image files
+		".jpg": 'button[aria-label="Remove image"]',
+		".jpeg": 'button[aria-label="Remove image"]',
+		".png": 'button[aria-label="Remove image"]',
+		".gif": 'button[aria-label="Remove image"]',
+		".webp": 'button[aria-label="Remove image"]',
+		
+		# Document files
+		".pdf": 'button[aria-label="Remove document"]',
+		".txt": 'button[aria-label="Remove document"]',
+		".doc": 'button[aria-label="Remove document"]',
+		".docx": 'button[aria-label="Remove document"]'
+	}
 
-# Editable content
-SYSTEM_INSTRUCTION = """Tell me about Goku and give me in json format
+
+class AIStudioConfig:
+	"""Configuration constants for AI Studio automation"""
+	
+	# Timeout settings
+	DEFAULT_WAIT_TIMEOUT = 2000
+	UPLOAD_TIMEOUT = 20000
+	RUN_TIMEOUT = 60 * 60 * 1000  # 1 hour
+	
+	# URLs
+	NEW_CHAT_URL = "https://aistudio.google.com/prompts/new_chat"
+	
+	# Default content
+	DEFAULT_DOCKER_CONTAINER = "aistudio_ui_handler"
+
+
+class AIStudioAutomation:
+	"""Main automation class for Google AI Studio interactions"""
+	
+	def __init__(self, config: Optional[BrowserConfig] = None, policies_path: str = None, folder_path: str = None):
+		self.policies_path = policies_path
+		self.folder_path = folder_path
+		self.config = config or self._create_default_config()
+		self.logger = AIStudioLogger()
+		self.selectors = AIStudioSelectors()
+		self.settings = AIStudioConfig()
+	
+	def _create_default_config(self) -> BrowserConfig:
+		"""Create default browser configuration"""
+		config = BrowserConfig()
+		config.docker_name = AIStudioConfig.DEFAULT_DOCKER_CONTAINER
+		config.headless = False
+		config.user_data_dir = os.getenv("PROFILE_PATH", os.path.abspath("whoa/chatgpt_profile"))
+	
+		# Build additional docker flags dynamically
+		additional_flags = []
+		
+		if self.folder_path:
+			additional_flags.append(f'-v {self.folder_path}:/home/neko/Downloads')
+		
+		if self.policies_path:
+			additional_flags.append(f'-v {self.policies_path}:/etc/opt/chrome/policies/managed/policies.json')
+		
+		# Join all flags with spaces
+		config.additionl_docker_flag = ' '.join(additional_flags)
+		return config
+	
+	def set_local_browser(self, executable_path: str = '/usr/bin/brave-browser'):
+		"""Configure to use local browser instead of Docker"""
+		self.config.use_neko = False
+		self.config.browser_executable = executable_path
+	
+	# --- Page Setup and Navigation ---
+	
+	def navigate_to_new_chat(self, page) -> None:
+		"""Navigate to AI Studio new chat page"""
+		self.logger.info("Navigating to AI Studio new chat page", "1")
+		page.goto(self.settings.NEW_CHAT_URL)
+		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT * 3)
+		self._dismiss_popup(page)
+		self.logger.success("Navigation completed", "1")
+	
+	def _dismiss_popup(self, page) -> None:
+		"""Dismiss any popup dialogs that might appear"""
+		try:
+			self.logger.debug("Attempting to dismiss popup...")
+			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
+			close_button = page.locator(self.selectors.CLOSE_BUTTON)
+			close_button.click()
+			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
+			self.logger.debug("Popup dismissed successfully")
+		except Exception as e:
+			self.logger.debug(f"No popup to dismiss or dismissal failed: {e}")
+	
+	# --- Configuration Methods ---
+	
+	def configure_system_instructions(self, page, instruction_content: str) -> None:
+		"""Set the system instruction in Google AI Studio"""
+		self.logger.info("Configuring system instructions...", "2")
+		
+		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
+		page.locator(self.selectors.SYSTEM_INSTRUCTIONS_BUTTON).click()
+		self.logger.debug("System instructions button clicked")
+		
+		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
+		page.locator(self.selectors.SYSTEM_INSTRUCTIONS_TEXTAREA).fill(instruction_content)
+		self.logger.debug(f"System instructions filled ({len(instruction_content)} characters)")
+		
+		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
+		self.logger.success("System instructions configured", "2")
+	
+	def configure_user_prompt(self, page, prompt_content: str) -> None:
+		"""Set the user prompt in Google AI Studio"""
+		self.logger.info("Configuring user prompt...", "3")
+		
+		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
+		prompt_textarea = page.locator(self.selectors.USER_PROMPT_TEXTAREA)
+		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
+		prompt_textarea.fill(prompt_content)
+		self.logger.debug(f"User prompt filled: '{prompt_content[:50]}...'")
+		
+		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
+		self.logger.success("User prompt configured", "3")
+	
+	# --- File Upload Methods ---
+	
+	def upload_media_file(self, page, file_path: str, choose_file_via_xdotool) -> bool:
+		"""Upload a media file using xdotool integration"""
+		self.logger.info(f"Starting file upload: {file_path}", "4")
+		
+		if not self._validate_file_path(file_path):
+			return False
+		
+		file_extension = Path(file_path).suffix.lower()
+		
+		# Step 4a: Click insert assets button
+		self.logger.info("Clicking insert assets button...", "4a")
+		page.locator(self.selectors.INSERT_ASSETS_BUTTON).click()
+		page.wait_for_timeout(2000)
+		self.logger.success("Insert assets button clicked", "4a")
+		
+		# Step 4b: Open file upload dialog
+		self.logger.info("Opening file upload dialog...", "4b")
+		page.locator(self.selectors.FILE_INPUT_MANUAL_UPLOAD).click()
+		page.wait_for_timeout(3000)
+		self.logger.success("File dialog opened", "4b")
+		
+		# Step 4c: Use xdotool to interact with dialog
+		self.logger.info("Using xdotool to select file...", "4c")
+		try:
+			choose_file_via_xdotool(file_path=file_path)
+			self.logger.success("File selected via xdotool", "4c")
+		except Exception as e:
+			self.logger.error(f"xdotool file selection failed: {e}", "4c")
+			return False
+		
+		# Step 4d: Handle copyright acknowledgment
+		self.logger.info("Processing copyright acknowledgment...", "4d")
+		self._acknowledge_copyright(page)
+		self.logger.success("Copyright acknowledged", "4d")
+		
+		# Step 4e: Wait for upload completion
+		self.logger.info("Waiting for upload completion...", "4e")
+		self._wait_for_upload_completion(page, file_extension)
+		self.logger.success("Upload completed", "4e")
+		
+		# Step 4f: Close dialogs
+		self.logger.info("Closing upload dialogs...", "4f")
+		page.keyboard.press("Escape")
+		page.wait_for_timeout(500)
+		page.keyboard.press("Escape")
+		page.wait_for_timeout(1000)
+		self.logger.success("Dialogs closed", "4f")
+		
+		self.logger.success(f"File uploaded successfully: {file_path}", "4")
+		return True
+	
+	def _validate_file_path(self, file_path: str) -> bool:
+		"""Validate that the file path is provided and accessible"""
+		if not file_path:
+			self.logger.error("File path is empty")
+			return False
+		
+		# Note: We can't check if file exists since it's inside Docker container
+		# Just validate the path format
+		if not isinstance(file_path, str) or len(file_path.strip()) == 0:
+			self.logger.error("Invalid file path format")
+			return False
+		
+		return True
+	
+	def _acknowledge_copyright(self, page) -> None:
+		"""Acknowledge copyright notice if it appears"""
+		try:
+			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
+			acknowledge_button = page.locator(self.selectors.COPYRIGHT_ACKNOWLEDGE_BUTTON)
+			acknowledge_button.click()
+			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
+			self.logger.debug("Copyright acknowledgment clicked")
+		except Exception as e:
+			self.logger.debug(f"No copyright dialog to acknowledge: {e}")
+	
+	def _wait_for_upload_completion(self, page, file_extension: str) -> None:
+		"""Wait for upload completion based on file type"""
+		self.logger.debug(f"Waiting for upload completion for file type: {file_extension}")
+		
+		removal_selector = self.selectors.FILE_TYPE_REMOVAL_SELECTORS.get(file_extension)
+		if not removal_selector:
+			self.logger.warning(f"Unknown file type: {file_extension}. Using fallback wait.")
+			page.wait_for_timeout(3000)
+			return
+		
+		try:
+			page.wait_for_selector(removal_selector, timeout=self.settings.UPLOAD_TIMEOUT)
+			self.logger.debug(f"Upload confirmed via element: {removal_selector}")
+		except Exception as e:
+			self.logger.warning(f"Could not detect confirmation for {file_extension}: {e}")
+	
+	# --- Generation and Execution ---
+	
+	def execute_generation(self, page) -> None:
+		"""Execute the AI generation process"""
+		from playwright.sync_api import expect
+		
+		self.logger.info("Starting AI generation...", "5")
+		
+		run_button = page.locator(self.selectors.RUN_BUTTON)
+		
+		# Step 5a: Wait for run button to be enabled
+		self.logger.info("Waiting for run button to be enabled...", "5a")
+		expect(run_button).to_be_enabled(timeout=self.settings.RUN_TIMEOUT)
+		self.logger.success("Run button is enabled", "5a")
+		
+		# Step 5b: Click run button
+		self.logger.info("Clicking run button...", "5b")
+		run_button.click()
+		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
+		self.logger.success("Run button clicked", "5b")
+		
+		# Step 5c: Wait for generation to complete
+		self.logger.info("Waiting for generation to complete...", "5c")
+		expect(run_button).not_to_have_text("Stop", timeout=self.settings.RUN_TIMEOUT)
+		self.logger.success("Generation completed", "5c")
+		
+		self.logger.success("AI generation finished", "5")
+	
+	# --- Result Extraction ---
+	
+	def extract_result(self, page) -> Union[Dict[str, Any], str]:
+		"""Extract and parse the generated result"""
+		self.logger.info("Extracting generation result...", "6")
+		
+		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
+		
+		try:
+			code_blocks = page.eval_on_selector_all(
+				self.selectors.CODE_BLOCKS, 
+				"elements => elements.map(e => e.innerText)"
+			)
+			
+			if not code_blocks:
+				self.logger.error("No code blocks found in response")
+				raise Exception("No code blocks found.")
+			
+			last_code_content = code_blocks[-1]
+			self.logger.debug(f"Found {len(code_blocks)} code blocks, using last one")
+			
+			# Try to parse as JSON
+			try:
+				parsed_data = json_repair.loads(last_code_content)
+				self.logger.success(f"Successfully parsed JSON result", "6")
+				self.logger.debug(f"Result preview: {str(parsed_data)[:100]}...")
+				return parsed_data
+			except Exception as json_error:
+				self.logger.warning(f"Last code block is not valid JSON: {json_error}")
+				self.logger.success(f"Returning raw text result", "6")
+				return last_code_content
+				
+		except Exception as e:
+			self.logger.error(f"Failed to extract result: {e}", "6")
+			raise
+	
+	# --- Main Workflow ---
+	
+	def process_session(self, page, system_instruction: str, user_prompt: str, file_path: Optional[str] = None, choose_file_via_xdotool=None) -> Union[Dict[str, Any], str]:
+		"""Execute the complete AI Studio workflow"""
+		self.logger.info("=== Starting AI Studio Session ===")
+		
+		try:
+			# Step 1: Navigate to new chat
+			self.navigate_to_new_chat(page)
+			
+			# Step 2: Configure system instructions
+			self.configure_system_instructions(page, system_instruction)
+			
+			# Step 3: Configure user prompt
+			self.configure_user_prompt(page, user_prompt)
+			
+			# Step 4: Upload file if provided
+			if file_path and choose_file_via_xdotool:
+				if not self.upload_media_file(page, file_path, choose_file_via_xdotool):
+					raise Exception("File upload failed")
+			elif file_path:
+				self.logger.warning("File path provided but no xdotool function available")
+			
+			# Step 5: Execute generation
+			self.execute_generation(page)
+			
+			# Step 6: Extract result
+			result = self.extract_result(page)
+			
+			self.logger.success("=== AI Studio Session Completed Successfully ===")
+			return result
+			
+		except Exception as e:
+			self.logger.error(f"Session failed: {str(e)}")
+			raise
+	
+	# --- Public Interface ---
+	
+	def generate(self, system_instruction: str, user_prompt: str, file_path: Optional[str] = None, browser_manager: Optional[BrowserManager] = None, use_local_browser: bool = False) -> Optional[Union[Dict[str, Any], str]]:
+		"""
+		Execute a complete AI Studio generation workflow
+		
+		Args:
+			system_instruction: The system instruction to use
+			user_prompt: The user prompt to send
+			file_path: Optional path to file to upload (must be accessible in container)
+			browser_manager: Optional existing browser manager instance
+			use_local_browser: Whether to use local browser instead of Docker
+			
+		Returns:
+			The generated response, parsed as JSON if possible, None if failed
+		"""
+		try:
+			if use_local_browser:
+				self.set_local_browser()
+			
+			if not browser_manager:
+				# Create new browser manager for this session
+				browser_manager = BrowserManager(self.config)
+				choose_file_via_xdotool = partial(
+					browser_manager.launcher.choose_file_via_xdotool, 
+					config=self.config
+				)
+				
+				with browser_manager as page:
+					result = self.process_session(
+						page, system_instruction, user_prompt, file_path, choose_file_via_xdotool
+					)
+			else:
+				# Use existing browser manager
+				page = browser_manager.new_page()
+				choose_file_via_xdotool = partial(
+					browser_manager.launcher.choose_file_via_xdotool, 
+					config=self.config
+				)
+				try:
+					# Note: choose_file_via_xdotool needs to be provided externally in this case
+					result = self.process_session(
+						page, system_instruction, user_prompt, file_path, choose_file_via_xdotool
+					)
+				finally:
+					page.close()
+			
+			return result
+			
+		except Exception as e:
+			self.logger.error(f"Generation workflow failed: {str(e)}")
+			return None
+
+
+# --- Convenience Functions ---
+
+def run_gemini_generation(system_instruction: str, user_prompt: str, file_path: Optional[str] = None, browser_manager: Optional[BrowserManager] = None, use_local_browser: bool = False, policies_path: str = None, folder_path: str = None) -> Optional[Union[Dict[str, Any], str]]:
+	"""
+	Convenience function for running AI Studio generation
+	
+	Args:
+		system_instruction: The system instruction to use
+		user_prompt: The user prompt to send
+		file_path: Optional path to file to upload
+		browser_manager: Optional existing browser manager instance
+		use_local_browser: Whether to use local browser instead of Docker
+		
+	Returns:
+		The generated response, parsed as JSON if possible
+	"""
+	automation = AIStudioAutomation(policies_path=policies_path, folder_path=folder_path)
+	return automation.generate(
+		system_instruction=system_instruction,
+		user_prompt=user_prompt,
+		file_path=file_path,
+		browser_manager=browser_manager,
+		use_local_browser=use_local_browser
+	)
+
+
+# --- Example Usage ---
+
+if __name__ == "__main__":
+	# Example usage with detailed logging
+	DEFAULT_SYSTEM_INSTRUCTION = """Tell me about Goku and give me in json format
 
 Provide your response in this exact JSON structure:
 
@@ -57,207 +486,15 @@ Provide your response in this exact JSON structure:
 }
 ```
 """
-
-DEFAULT_USER_PROMPT = "Goku goal."
-
-# --- Core Functions ---
-
-def configure_system_instructions(page, instruction_content):
-    """Set the system instruction in Google AI Studio."""
-    print("[INFO] Setting system instruction...")
-    page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT)
-    page.locator(SELECTORS['system_instructions_button']).click()
-    page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT)
-    page.locator(SELECTORS['system_instructions_textarea']).fill(instruction_content)
-    page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT)
-
-def configure_user_prompt(page, prompt_content):
-    """Set the user prompt in Google AI Studio."""
-    print("[INFO] Setting user prompt...")
-    page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT)
-    prompt_textarea = page.locator(SELECTORS['user_prompt_textarea'])
-    page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT)
-    prompt_textarea.fill(prompt_content)
-    page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT)
-
-def execute_generation(page):
-    """Click the run button and wait for completion."""
-    from playwright.sync_api import expect
-    print("[INFO] Executing generation...")
-    run_button = page.locator(SELECTORS['run_button'])
-    run_button.click()
-
-    # Give it a moment to update
-    page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT)
-
-    # Wait until the button text no longer says "Stop"
-    print("[INFO] Waiting for generation to complete...")
-    expect(run_button).not_to_have_text("Stop", timeout=RUN_TIMEOUT)
-
-    print("[INFO] Generation complete.")
-
-def dismiss_popup(page):
-    """Close any popup that might appear."""
-    try:
-        page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT)
-        close_button = page.locator(SELECTORS['close_button'])
-        close_button.click()
-        page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT)
-    except:
-        pass
-
-def extract_json_from_last_code_block(page):
-    """Extract and parse JSON from the last code block on the page."""
-    print("[INFO] Extracting result from last code block...")
-    page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT)
-    code_blocks = page.eval_on_selector_all(
-        SELECTORS['code_blocks'], 
-        "elements => elements.map(e => e.innerText)"
-    )
-    if not code_blocks:
-        raise Exception("No code blocks found.")
-    
-    last_code_content = code_blocks[-1]
-    try:
-        parsed_data = json_repair.loads(last_code_content)
-        print(parsed_data)
-        return parsed_data
-    except:
-        print("[WARN] Last code block is not valid JSON.")
-        return last_code_content  # Return raw string if not JSON
-
-def acknowledge_copyright(page):
-    """Acknowledge copyright notice if it appears."""
-    try:
-        page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT)
-        acknowledge_button = page.locator(SELECTORS['copyright_acknowledge_button'])
-        acknowledge_button.click()
-        page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT)
-    except:
-        pass
-
-def upload_media_file(page, file_path):
-    """
-    Upload a media file using the 'Insert assets' button in Google AI Studio,
-    and wait for the corresponding asset type to load.
-
-    Args:
-        page: Playwright page object.
-        file_path: Absolute or relative path to the file to upload.
-    """
-    print(f"[INFO] Uploading file: {file_path}")
-
-    if not file_path or not os.path.exists(file_path):
-        print("[WARN] File path is empty or file does not exist.")
-        return
-
-    file_extension = os.path.splitext(file_path)[-1].lower()
-
-    # Step 1: Click the insert assets button
-    page.wait_for_timeout(1000)
-    page.locator(SELECTORS['insert_assets_button']).click()
-    page.wait_for_timeout(1000)
-
-    # Step 2: Wait for file input and upload
-    page.wait_for_selector(SELECTORS['file_input'], state="attached", timeout=5000)
-    page.wait_for_timeout(1000)
-
-    # Step 3: Upload file
-    page.locator(SELECTORS['file_input']).set_input_files(file_path)
-    page.wait_for_timeout(1000)
-
-    acknowledge_copyright(page)
-
-    # Step 4: Wait for upload confirmation
-    wait_for_upload_completion(page, file_extension)
-
-    # Step 5: Dismiss upload dialog
-    page.wait_for_timeout(1000)
-    page.keyboard.press("Escape")
-    page.wait_for_timeout(500)
-    page.keyboard.press("Escape")
-    page.wait_for_timeout(1000)
-
-    print(f"[INFO] File uploaded successfully: {file_path}")
-
-def wait_for_upload_completion(page, file_extension):
-    """Wait for the appropriate upload confirmation element based on file type."""
-    print(f"[INFO] Waiting for upload completion for file type: {file_extension}")
-
-    removal_selector = FILE_TYPE_SELECTORS.get(file_extension)
-    if not removal_selector:
-        print(f"[WARN] Unknown file type: {file_extension}. Using fallback wait.")
-        page.wait_for_timeout(3000)
-        return
-
-    try:
-        page.wait_for_selector(removal_selector, timeout=UPLOAD_TIMEOUT)
-        print(f"[INFO] Upload confirmed via element: {removal_selector}")
-    except:
-        print(f"[WARN] Could not detect confirmation for {file_extension}, continuing anyway.")
-
-def process_gemini_session(page, system_instruction, user_prompt, file_path):
-    """Execute the complete Gemini AI Studio workflow."""
-    print("[INFO] Starting Gemini AI Studio session...")
-    page.goto("https://aistudio.google.com/prompts/new_chat")
-    page.wait_for_timeout(DEFAULT_WAIT_TIMEOUT+DEFAULT_WAIT_TIMEOUT+DEFAULT_WAIT_TIMEOUT)
-    dismiss_popup(page)
-    configure_system_instructions(page, system_instruction)
-    configure_user_prompt(page, user_prompt)
-    
-    if file_path:
-        upload_media_file(page, file_path)
-    
-    execute_generation(page)
-    result = extract_json_from_last_code_block(page)
-    return result
-
-# --- Main Interface ---
-
-def run_gemini_generation(system_instruction, user_prompt, file_path=None, browser_manager=None, use_local_browser=False):
-    """
-    Execute a Gemini AI Studio generation with the provided parameters.
-    
-    Args:
-        system_instruction (str): The system instruction to use
-        user_prompt (str): The user prompt to send
-        file_path (str, optional): Path to file to upload
-        browser_manager (BrowserManager, optional): Existing browser manager instance
-        use_local_browser (bool): Whether to use local browser instead of Docker
-        
-    Returns:
-        dict or str: The generated response, parsed as JSON if possible
-    """
-    try:
-        config = BrowserConfig()
-        config.docker_name = "text_frame_aligner"
-        
-        if use_local_browser:
-            config.use_neko = False
-            config.browser_executable = '/usr/bin/brave-browser'
-        
-        config.headless = False
-        config.user_data_dir = os.getenv("PROFILE_PATH", os.path.abspath("whoa/chatgpt_profile"))
-        
-        if not browser_manager:
-            with BrowserManager(config) as page:
-                result = process_gemini_session(page, system_instruction, user_prompt, file_path)
-        else:
-            page = browser_manager.new_page()
-            result = process_gemini_session(page, system_instruction, user_prompt, file_path)
-            page.close()
-
-        return result
-    except Exception as e:
-        print(f"[ERROR] Generation failed: {str(e)}")
-        return None
-
-# --- Example Usage ---
-
-if __name__ == "__main__":
-    result = run_gemini_generation(
-        system_instruction=SYSTEM_INSTRUCTION,
-        user_prompt=DEFAULT_USER_PROMPT
-    )
-    print("[RESULT]")
-    print(result)
+	
+	DEFAULT_USER_PROMPT = "Goku goal."
+	
+	result = run_gemini_generation(
+		system_instruction=DEFAULT_SYSTEM_INSTRUCTION,
+		user_prompt=DEFAULT_USER_PROMPT
+	)
+	
+	print("\n" + "="*50)
+	print("FINAL RESULT:")
+	print("="*50)
+	print(result)
