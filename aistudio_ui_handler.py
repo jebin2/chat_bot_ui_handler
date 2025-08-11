@@ -107,19 +107,20 @@ class AIStudioConfig:
 	NEW_CHAT_URL = "https://aistudio.google.com/prompts/new_chat"
 	
 	# Default content
-	DEFAULT_DOCKER_CONTAINER = "aistudio_ui_handler"
+	DEFAULT_DOCKER_CONTAINER = "anime_shorts_aistudio_ui_handler"
 
 
 class AIStudioAutomation:
 	"""Main automation class for Google AI Studio interactions"""
 	
-	def __init__(self, config: Optional[BrowserConfig] = None, policies_path: str = None, folder_path: str = None):
+	def __init__(self, config: Optional[BrowserConfig] = None, url: str = None, policies_path: str = None, folder_path: str = None):
 		self.policies_path = policies_path
 		self.folder_path = folder_path
 		self.config = config or self._create_default_config()
 		self.logger = AIStudioLogger()
 		self.selectors = AIStudioSelectors()
 		self.settings = AIStudioConfig()
+		self.settings.NEW_CHAT_URL = url or AIStudioConfig.NEW_CHAT_URL
 	
 	def _create_default_config(self) -> BrowserConfig:
 		"""Create default browser configuration"""
@@ -291,7 +292,11 @@ class AIStudioAutomation:
 			self.logger.debug(f"Upload confirmed via element: {removal_selector}")
 		except Exception as e:
 			self.logger.warning(f"Could not detect confirmation for {file_extension}: {e}")
-	
+
+	def _get_url(self, page):
+		self.configure_user_prompt(page, ".")
+		return page.url
+
 	# --- Generation and Execution ---
 	
 	def execute_generation(self, page) -> None:
@@ -384,9 +389,11 @@ class AIStudioAutomation:
 			
 			# Step 6: Extract result
 			result = self.extract_result(page)
+
+			url = self._get_url(page)
 			
 			self.logger.success("=== AI Studio Session Completed Successfully ===")
-			return result
+			return result, url
 			
 		except Exception as e:
 			self.logger.error(f"Session failed: {str(e)}")
@@ -421,7 +428,7 @@ class AIStudioAutomation:
 				)
 				
 				with browser_manager as page:
-					result = self.process_session(
+					result, url = self.process_session(
 						page, system_instruction, user_prompt, file_path, choose_file_via_xdotool
 					)
 			else:
@@ -433,22 +440,22 @@ class AIStudioAutomation:
 				)
 				try:
 					# Note: choose_file_via_xdotool needs to be provided externally in this case
-					result = self.process_session(
+					result, url = self.process_session(
 						page, system_instruction, user_prompt, file_path, choose_file_via_xdotool
 					)
 				finally:
 					page.close()
 			
-			return result
+			return result, url
 			
 		except Exception as e:
 			self.logger.error(f"Generation workflow failed: {str(e)}")
-			return None
+			return None, None
 
 
 # --- Convenience Functions ---
 
-def run_gemini_generation(system_instruction: str, user_prompt: str, file_path: Optional[str] = None, browser_manager: Optional[BrowserManager] = None, use_local_browser: bool = False, policies_path: str = None, folder_path: str = None) -> Optional[Union[Dict[str, Any], str]]:
+def run_gemini_generation(system_instruction: str, user_prompt: str, url: str = None, file_path: Optional[str] = None, browser_manager: Optional[BrowserManager] = None, use_local_browser: bool = False, policies_path: str = None, folder_path: str = None) -> Optional[Union[Dict[str, Any], str]]:
 	"""
 	Convenience function for running AI Studio generation
 	
@@ -462,7 +469,7 @@ def run_gemini_generation(system_instruction: str, user_prompt: str, file_path: 
 	Returns:
 		The generated response, parsed as JSON if possible
 	"""
-	automation = AIStudioAutomation(policies_path=policies_path, folder_path=folder_path)
+	automation = AIStudioAutomation(url=url, policies_path=policies_path, folder_path=folder_path)
 	return automation.generate(
 		system_instruction=system_instruction,
 		user_prompt=user_prompt,
@@ -489,7 +496,7 @@ Provide your response in this exact JSON structure:
 	
 	DEFAULT_USER_PROMPT = "Goku goal."
 	
-	result = run_gemini_generation(
+	result, url = run_gemini_generation(
 		system_instruction=DEFAULT_SYSTEM_INSTRUCTION,
 		user_prompt=DEFAULT_USER_PROMPT
 	)
@@ -498,3 +505,4 @@ Provide your response in this exact JSON structure:
 	print("FINAL RESULT:")
 	print("="*50)
 	print(result)
+	print(url)
