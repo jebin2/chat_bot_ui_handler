@@ -162,9 +162,11 @@ class AIStudioAutomation:
 		# Try selecting 2.5 Pro, fallback to 2.5 Flash if not found
 		try:
 			dropdown_panel.locator("text=2.5 Pro").wait_for(state="visible", timeout=3000)
+			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
 			dropdown_panel.locator("text=2.5 Pro").click()
 		except:
 			dropdown_panel.locator("text=2.5 Flash").wait_for(state="visible")
+			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
 			dropdown_panel.locator("text=2.5 Flash").click()
 
 	def navigate_to_new_chat(self, page) -> None:
