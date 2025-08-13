@@ -54,6 +54,7 @@ class AIStudioSelectors:
 	SYSTEM_INSTRUCTIONS_BUTTON = 'button[aria-label="System instructions"]'
 	SYSTEM_INSTRUCTIONS_TEXTAREA = 'textarea[aria-label="System instructions"]'
 	USER_PROMPT_TEXTAREA = 'div.text-input-wrapper textarea'
+	GEMINI_USER_PROMPT_TEXTAREA = 'rich-textarea div.ql-editor[contenteditable="true"]'
 	RUN_BUTTON = 'button[aria-label="Run"]'
 	CLOSE_BUTTON = 'button[aria-label="close"]'
 	
@@ -105,6 +106,7 @@ class AIStudioConfig:
 	
 	# URLs
 	NEW_CHAT_URL = "https://aistudio.google.com/prompts/new_chat"
+	GEMINI_NEW_CHAT_URL = "https://gemini.google.com/app"
 	
 	# Default content
 	DEFAULT_DOCKER_CONTAINER = "anime_shorts_aistudio_ui_handler"
@@ -113,14 +115,15 @@ class AIStudioConfig:
 class AIStudioAutomation:
 	"""Main automation class for Google AI Studio interactions"""
 	
-	def __init__(self, config: Optional[BrowserConfig] = None, url: str = None, policies_path: str = None, folder_path: str = None):
+	def __init__(self, config: Optional[BrowserConfig] = None, url: str = None, policies_path: str = None, folder_path: str = None, use_gemini: bool = False):
 		self.policies_path = policies_path
 		self.folder_path = folder_path
 		self.config = config or self._create_default_config()
 		self.logger = AIStudioLogger()
 		self.selectors = AIStudioSelectors()
 		self.settings = AIStudioConfig()
-		self.settings.NEW_CHAT_URL = url or AIStudioConfig.NEW_CHAT_URL
+		self.settings.NEW_CHAT_URL = url or (AIStudioConfig.GEMINI_NEW_CHAT_URL if use_gemini else AIStudioConfig.NEW_CHAT_URL)
+		self.use_gemini = use_gemini
 	
 	def _create_default_config(self) -> BrowserConfig:
 		"""Create default browser configuration"""
@@ -148,14 +151,41 @@ class AIStudioAutomation:
 		self.config.browser_executable = executable_path
 	
 	# --- Page Setup and Navigation ---
-	
+
+	def set_model(self, page):
+		"""Set the Gemini model (2.5 Pro or fallback to 2.5 Flash)."""
+		# Click the Bard mode menu button
+		page.wait_for_selector('div[data-test-id="bard-mode-menu-button"] button', state="visible")
+		page.click('div[data-test-id="bard-mode-menu-button"] button')
+		dropdown_panel = page.locator('#mat-menu-panel-0')
+
+		# Try selecting 2.5 Pro, fallback to 2.5 Flash if not found
+		try:
+			dropdown_panel.locator("text=2.5 Pro").wait_for(state="visible", timeout=3000)
+			dropdown_panel.locator("text=2.5 Pro").click()
+		except:
+			dropdown_panel.locator("text=2.5 Flash").wait_for(state="visible")
+			dropdown_panel.locator("text=2.5 Flash").click()
+
 	def navigate_to_new_chat(self, page) -> None:
 		"""Navigate to AI Studio new chat page"""
-		self.logger.info("Navigating to AI Studio new chat page", "1")
-		page.goto(self.settings.NEW_CHAT_URL)
+		self.logger.info(f"Navigating to {self.settings.NEW_CHAT_URL}", "1")
+		
+		# Go to page, wait until no network connections for at least 500ms
+		page.goto(
+			self.settings.NEW_CHAT_URL,
+			# wait_until="networkidle",
+			timeout=600_000  # 10 minutes in milliseconds
+		)
+		
+		# Keep your extra wait if needed
 		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT * 3)
+		
 		self._dismiss_popup(page)
+		if self.use_gemini:
+			self.set_model(page)
 		self.logger.success("Navigation completed", "1")
+
 	
 	def _dismiss_popup(self, page) -> None:
 		"""Dismiss any popup dialogs that might appear"""
@@ -163,6 +193,8 @@ class AIStudioAutomation:
 			self.logger.debug("Attempting to dismiss popup...")
 			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
 			close_button = page.locator(self.selectors.CLOSE_BUTTON)
+			if self.use_gemini:
+				close_button = page.locator("button[data-test-id='close-button']")
 			close_button.click()
 			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
 			self.logger.debug("Popup dismissed successfully")
@@ -186,16 +218,22 @@ class AIStudioAutomation:
 		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
 		self.logger.success("System instructions configured", "2")
 	
-	def configure_user_prompt(self, page, prompt_content: str) -> None:
-		"""Set the user prompt in Google AI Studio"""
+	def configure_user_prompt(self, page, prompt_content: str, system_instruction: str = None) -> None:
+		"""Set the user prompt in Google AI Studio or Gemini."""
 		self.logger.info("Configuring user prompt...", "3")
-		
 		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
-		prompt_textarea = page.locator(self.selectors.USER_PROMPT_TEXTAREA)
-		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
-		prompt_textarea.fill(prompt_content)
-		self.logger.debug(f"User prompt filled: '{prompt_content[:50]}...'")
-		
+
+		if self.use_gemini:
+			# Fill in Gemini's rich-textarea
+			prompt_textarea = page.locator('rich-textarea div.ql-editor[contenteditable="true"]')
+			page.wait_for_selector('rich-textarea div.ql-editor[contenteditable="true"]', state="visible")
+			prompt_textarea.fill(f"""System Instruction: {system_instruction}
+User Prompt: {prompt_content}""")
+		else:
+			# AI Studio version
+			prompt_textarea = page.locator(self.selectors.USER_PROMPT_TEXTAREA)
+			prompt_textarea.fill(prompt_content)
+
 		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
 		self.logger.success("User prompt configured", "3")
 	
@@ -300,30 +338,53 @@ class AIStudioAutomation:
 	# --- Generation and Execution ---
 	
 	def execute_generation(self, page) -> None:
-		"""Execute the AI generation process"""
+		"""Execute the AI generation process."""
 		from playwright.sync_api import expect
-		
+
 		self.logger.info("Starting AI generation...", "5")
-		
-		run_button = page.locator(self.selectors.RUN_BUTTON)
-		
-		# Step 5a: Wait for run button to be enabled
-		self.logger.info("Waiting for run button to be enabled...", "5a")
-		expect(run_button).to_be_enabled(timeout=self.settings.RUN_TIMEOUT)
-		self.logger.success("Run button is enabled", "5a")
-		
-		# Step 5b: Click run button
-		self.logger.info("Clicking run button...", "5b")
-		run_button.click()
-		page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
-		self.logger.success("Run button clicked", "5b")
-		
-		# Step 5c: Wait for generation to complete
-		self.logger.info("Waiting for generation to complete...", "5c")
-		expect(run_button).not_to_have_text("Stop", timeout=self.settings.RUN_TIMEOUT)
-		self.logger.success("Generation completed", "5c")
-		
+
+		if self.use_gemini:
+			# Gemini.com send workflow
+			send_button = page.locator('button[aria-label="Send message"]')
+			stop_button_selector = 'button[aria-label="Stop response"]'
+
+			# Wait until send button is enabled
+			self.logger.info("Waiting for send button to be enabled...", "5a")
+			expect(send_button).to_be_enabled(timeout=self.settings.RUN_TIMEOUT)
+			self.logger.success("Send button is enabled", "5a")
+
+			# Click send
+			self.logger.info("Clicking send button...", "5b")
+			send_button.click()
+			self.logger.success("Send button clicked", "5b")
+
+			# Wait until stop button disappears (response finished)
+			self.logger.info("Waiting for Gemini response to complete...", "5c")
+			page.wait_for_selector(stop_button_selector, state="hidden", timeout=60000)
+			self.logger.success("Gemini response completed", "5c")
+
+		else:
+			# AI Studio workflow
+			run_button = page.locator(self.selectors.RUN_BUTTON)
+
+			# Step 5a: Wait for run button to be enabled
+			self.logger.info("Waiting for run button to be enabled...", "5a")
+			expect(run_button).to_be_enabled(timeout=self.settings.RUN_TIMEOUT)
+			self.logger.success("Run button is enabled", "5a")
+
+			# Step 5b: Click run button
+			self.logger.info("Clicking run button...", "5b")
+			run_button.click()
+			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
+			self.logger.success("Run button clicked", "5b")
+
+			# Step 5c: Wait for generation to complete
+			self.logger.info("Waiting for generation to complete...", "5c")
+			expect(run_button).not_to_have_text("Stop", timeout=self.settings.RUN_TIMEOUT)
+			self.logger.success("Generation completed", "5c")
+
 		self.logger.success("AI generation finished", "5")
+
 	
 	# --- Result Extraction ---
 	
@@ -370,15 +431,15 @@ class AIStudioAutomation:
 		try:
 			# Step 1: Navigate to new chat
 			self.navigate_to_new_chat(page)
-			
-			# Step 2: Configure system instructions
-			self.configure_system_instructions(page, system_instruction)
+			if not self.use_gemini:
+				# Step 2: Configure system instructions
+				self.configure_system_instructions(page, system_instruction)
 			
 			# Step 3: Configure user prompt
-			self.configure_user_prompt(page, user_prompt)
+			self.configure_user_prompt(page, user_prompt, system_instruction)
 			
 			# Step 4: Upload file if provided
-			if file_path and choose_file_via_xdotool:
+			if file_path and choose_file_via_xdotool and not self.use_gemini:
 				if not self.upload_media_file(page, file_path, choose_file_via_xdotool):
 					raise Exception("File upload failed")
 			elif file_path:
@@ -455,7 +516,7 @@ class AIStudioAutomation:
 
 # --- Convenience Functions ---
 
-def run_gemini_generation(system_instruction: str, user_prompt: str, url: str = None, file_path: Optional[str] = None, browser_manager: Optional[BrowserManager] = None, use_local_browser: bool = False, policies_path: str = None, folder_path: str = None) -> Optional[Union[Dict[str, Any], str]]:
+def run_gemini_generation(system_instruction: str, user_prompt: str, url: str = None, file_path: Optional[str] = None, browser_manager: Optional[BrowserManager] = None, use_local_browser: bool = False, policies_path: str = None, folder_path: str = None, use_gemini: bool = False) -> Optional[Union[Dict[str, Any], str]]:
 	"""
 	Convenience function for running AI Studio generation
 	
@@ -469,7 +530,7 @@ def run_gemini_generation(system_instruction: str, user_prompt: str, url: str = 
 	Returns:
 		The generated response, parsed as JSON if possible
 	"""
-	automation = AIStudioAutomation(url=url, policies_path=policies_path, folder_path=folder_path)
+	automation = AIStudioAutomation(url=url, policies_path=policies_path, folder_path=folder_path, use_gemini=use_gemini)
 	return automation.generate(
 		system_instruction=system_instruction,
 		user_prompt=user_prompt,
@@ -498,7 +559,8 @@ Provide your response in this exact JSON structure:
 	
 	result, url = run_gemini_generation(
 		system_instruction=DEFAULT_SYSTEM_INSTRUCTION,
-		user_prompt=DEFAULT_USER_PROMPT
+		user_prompt=DEFAULT_USER_PROMPT,
+		use_gemini=True
 	)
 	
 	print("\n" + "="*50)
