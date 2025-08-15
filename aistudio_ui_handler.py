@@ -145,10 +145,13 @@ class AIStudioAutomation:
 		config.additionl_docker_flag = ' '.join(additional_flags)
 		return config
 	
-	def set_local_browser(self, executable_path: str = '/usr/bin/brave-browser'):
+	def set_local_browser(self, executable_path: str = '/usr/bin/brave-browser', is_remote_debugging: bool = True, use_local_browser: bool = False):
 		"""Configure to use local browser instead of Docker"""
-		self.config.use_neko = False
-		self.config.browser_executable = executable_path
+		self.config.use_neko = not use_local_browser
+		self.config.use_local_browser = use_local_browser
+		if use_local_browser or not is_remote_debugging:
+			self.config.browser_executable = executable_path
+		self.config.is_remote_debugging = is_remote_debugging
 	
 	# --- Page Setup and Navigation ---
 
@@ -168,6 +171,7 @@ class AIStudioAutomation:
 			dropdown_panel.locator("text=2.5 Flash").wait_for(state="visible")
 			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
 			dropdown_panel.locator("text=2.5 Flash").click()
+
 
 	def navigate_to_new_chat(self, page) -> None:
 		"""Navigate to AI Studio new chat page"""
@@ -197,7 +201,7 @@ class AIStudioAutomation:
 			close_button = page.locator(self.selectors.CLOSE_BUTTON)
 			if self.use_gemini:
 				close_button = page.locator("button[data-test-id='close-button']")
-			close_button.click()
+			close_button.click(timeout=self.settings.DEFAULT_WAIT_TIMEOUT*2)
 			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
 			self.logger.debug("Popup dismissed successfully")
 		except Exception as e:
@@ -255,17 +259,22 @@ User Prompt: {prompt_content}""")
 		page.locator(self.selectors.INSERT_ASSETS_BUTTON).click()
 		page.wait_for_timeout(2000)
 		self.logger.success("Insert assets button clicked", "4a")
-		
-		# Step 4b: Open file upload dialog
-		self.logger.info("Opening file upload dialog...", "4b")
-		page.locator(self.selectors.FILE_INPUT_MANUAL_UPLOAD).click()
-		page.wait_for_timeout(3000)
-		self.logger.success("File dialog opened", "4b")
+
+		if self.is_remote_debugging:
+			# Step 4b: Open file upload dialog
+			self.logger.info("Opening file upload dialog...", "4b")
+			page.locator(self.selectors.FILE_INPUT_MANUAL_UPLOAD).click()
+			page.wait_for_timeout(3000)
+			self.logger.success("File dialog opened", "4b")
 		
 		# Step 4c: Use xdotool to interact with dialog
 		self.logger.info("Using xdotool to select file...", "4c")
 		try:
-			choose_file_via_xdotool(file_path=file_path)
+			if not self.is_remote_debugging:
+				file_input = page.locator("input[type='file']")
+				file_input.set_input_files(file_path)
+			else:
+				choose_file_via_xdotool(file_path=file_path)
 			self.logger.success("File selected via xdotool", "4c")
 		except Exception as e:
 			self.logger.error(f"xdotool file selection failed: {e}", "4c")
@@ -311,7 +320,7 @@ User Prompt: {prompt_content}""")
 		try:
 			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
 			acknowledge_button = page.locator(self.selectors.COPYRIGHT_ACKNOWLEDGE_BUTTON)
-			acknowledge_button.click()
+			acknowledge_button.click(timeout=self.settings.DEFAULT_WAIT_TIMEOUT * 2)
 			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
 			self.logger.debug("Copyright acknowledgment clicked")
 		except Exception as e:
@@ -441,11 +450,11 @@ User Prompt: {prompt_content}""")
 			self.configure_user_prompt(page, user_prompt, system_instruction)
 			
 			# Step 4: Upload file if provided
-			if file_path and choose_file_via_xdotool and not self.use_gemini:
-				if not self.upload_media_file(page, file_path, choose_file_via_xdotool):
-					raise Exception("File upload failed")
-			elif file_path:
-				self.logger.warning("File path provided but no xdotool function available")
+			if not self.use_gemini:
+				if file_path:
+					if not self.upload_media_file(page, file_path, choose_file_via_xdotool):
+						raise Exception("File upload failed")
+			else: self.logger.warning("File path provided but no xdotool function available")
 			
 			# Step 5: Execute generation
 			self.execute_generation(page)
@@ -464,7 +473,7 @@ User Prompt: {prompt_content}""")
 	
 	# --- Public Interface ---
 	
-	def generate(self, system_instruction: str, user_prompt: str, file_path: Optional[str] = None, browser_manager: Optional[BrowserManager] = None, use_local_browser: bool = False) -> Optional[Union[Dict[str, Any], str]]:
+	def generate(self, system_instruction: str, user_prompt: str, file_path: Optional[str] = None, browser_manager: Optional[BrowserManager] = None, use_local_browser: bool = False, is_remote_debugging: bool = True) -> Optional[Union[Dict[str, Any], str]]:
 		"""
 		Execute a complete AI Studio generation workflow
 		
@@ -479,16 +488,20 @@ User Prompt: {prompt_content}""")
 			The generated response, parsed as JSON if possible, None if failed
 		"""
 		try:
-			if use_local_browser:
-				self.set_local_browser()
+			self.use_local_browser = use_local_browser
+			self.is_remote_debugging = is_remote_debugging
+			self.set_local_browser(use_local_browser=use_local_browser, is_remote_debugging=is_remote_debugging)
 			
 			if not browser_manager:
 				# Create new browser manager for this session
 				browser_manager = BrowserManager(self.config)
-				choose_file_via_xdotool = partial(
-					browser_manager.launcher.choose_file_via_xdotool, 
-					config=self.config
-				)
+				if use_local_browser or not is_remote_debugging:
+					choose_file_via_xdotool = None
+				else:
+					choose_file_via_xdotool = partial(
+						browser_manager.launcher.choose_file_via_xdotool, 
+						config=self.config
+					)
 				
 				with browser_manager as page:
 					result, url = self.process_session(
@@ -497,10 +510,13 @@ User Prompt: {prompt_content}""")
 			else:
 				# Use existing browser manager
 				page = browser_manager.new_page()
-				choose_file_via_xdotool = partial(
-					browser_manager.launcher.choose_file_via_xdotool, 
-					config=self.config
-				)
+				if use_local_browser or not is_remote_debugging:
+					choose_file_via_xdotool = None
+				else:
+					choose_file_via_xdotool = partial(
+						browser_manager.launcher.choose_file_via_xdotool, 
+						config=self.config
+					)
 				try:
 					# Note: choose_file_via_xdotool needs to be provided externally in this case
 					result, url = self.process_session(
@@ -518,7 +534,7 @@ User Prompt: {prompt_content}""")
 
 # --- Convenience Functions ---
 
-def run_gemini_generation(system_instruction: str, user_prompt: str, url: str = None, file_path: Optional[str] = None, browser_manager: Optional[BrowserManager] = None, use_local_browser: bool = False, policies_path: str = None, folder_path: str = None, use_gemini: bool = False) -> Optional[Union[Dict[str, Any], str]]:
+def run_gemini_generation(system_instruction: str, user_prompt: str, url: str = None, file_path: Optional[str] = None, browser_manager: Optional[BrowserManager] = None, use_local_browser: bool = False, policies_path: str = None, folder_path: str = None, use_gemini: bool = False, is_remote_debugging: bool = True) -> Optional[Union[Dict[str, Any], str]]:
 	"""
 	Convenience function for running AI Studio generation
 	
@@ -538,7 +554,8 @@ def run_gemini_generation(system_instruction: str, user_prompt: str, url: str = 
 		user_prompt=user_prompt,
 		file_path=file_path,
 		browser_manager=browser_manager,
-		use_local_browser=use_local_browser
+		use_local_browser=use_local_browser,
+		is_remote_debugging=is_remote_debugging
 	)
 
 
