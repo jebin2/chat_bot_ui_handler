@@ -6,7 +6,7 @@ import os
 import traceback
 from chat_bot_ui_handler import utils
 
-def get_caption_from_pally(user_prompt, file_path=None, config=None):
+def get_caption_from_pally(user_prompt, system_prompt=None, file_path=None, config=None):
 	try:
 		config = BrowserConfig()
 		config.docker_name = "pally_search_caption"
