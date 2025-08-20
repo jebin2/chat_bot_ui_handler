@@ -12,6 +12,7 @@ from .pally.handler import get_caption_from_pally
 from .qwen.handler import qwen_ui_chat
 from .perplexity.handler import perplexity_ui_chat
 from .gemini.handler import gemini_ui_chat
+from .meta.handler import meta_ui_chat
 
 from dotenv import load_dotenv
 import os
@@ -26,4 +27,5 @@ __all__ = [
     "qwen_ui_chat",
     "perplexity_ui_chat",
     "gemini_ui_chat",
+    "meta_ui_chat",
 ]
