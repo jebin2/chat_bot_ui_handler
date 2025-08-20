@@ -4,27 +4,31 @@ from custom_logger import logger_config
 from gemiwrap.utils import compress_image
 import os
 import traceback
+from chat_bot_ui_handler import utils
 
-def process(user_prompt, file_path=None, config=None):
+def search_google_ai_mode(user_prompt, system_prompt=None, file_path=None, config=None):
 	try:
 		config = config or BrowserConfig()
 		config.docker_name = "search_google_ai_mode"
+		full_prompt = user_prompt
+		if system_prompt:
+			full_prompt = f"SYSTEM INSTRUCTIONS:: {system_prompt}\n\nUSER PROMPT{user_prompt}"
 
 		with BrowserManager(config) as page:
 			try:
 				url = "https://www.google.com/"
 				logger_config.info(f"Loading URL: {url}")
-				page.goto(url)
+				page.goto(url, wait_until='domcontentloaded')
 				logger_config.info("Page loaded successfully, waiting 5s for content...")
 				page.wait_for_timeout(5000)
-				page.screenshot(path="search_google_ai_mode.png")
+				utils.save_screenshot(page)
 
 				logger_config.info("Locating 'AI Mode' button...")
 				ai_button = page.locator("button:has-text('AI Mode')").first
 				ai_button.click()
 				logger_config.info("'AI Mode' button clicked")
 				page.wait_for_timeout(2000)
-				page.screenshot(path="search_google_ai_mode.png")
+				utils.save_screenshot(page)
 
 				if file_path:
 					file_path = os.path.abspath(compress_image(file_path))
@@ -33,11 +37,11 @@ def process(user_prompt, file_path=None, config=None):
 					file_input.set_input_files(file_path)
 					logger_config.info("File uploaded successfully")
 					page.wait_for_timeout(5000)
-					page.screenshot(path="search_google_ai_mode.png")
+					utils.save_screenshot(page)
 
 				logger_config.info("Filling user prompt into textarea...")
 				textarea = page.locator("textarea").first
-				textarea.fill(user_prompt)
+				textarea.fill(full_prompt)
 				logger_config.info("Prompt filled successfully")
 
 				page.wait_for_timeout(2000)
@@ -48,7 +52,7 @@ def process(user_prompt, file_path=None, config=None):
 				logger_config.info("'Send' button clicked")
 
 				page.wait_for_timeout(2000)
-				page.screenshot(path="search_google_ai_mode.png")
+				utils.save_screenshot(page)
 
 				logger_config.info("Waiting for results in 'main-col' container...")
 				page.wait_for_selector('div[data-container-id="main-col"]', timeout=15000)
@@ -59,13 +63,13 @@ def process(user_prompt, file_path=None, config=None):
 				logger_config.info("Result fetched successfully")
 				print("Result:", result_text)
 
-				page.screenshot(path="search_google_ai_mode.png")
+				utils.save_screenshot(page)
 				return result_text
 
 			except Exception as e:
 				logger_config.error(f"Error during search_google_ai_mode: {e} {traceback.format_exc()}")
 				try:
-					page.screenshot(path="search_google_ai_mode_error.png")
+					utils.save_screenshot(page)
 				except:
 					pass
 	except: pass
@@ -80,5 +84,5 @@ if __name__ == "__main__":
 			"details that would help someone understand the scene's context. "
 			"Max word: 100 ONLY"
 		),
-		file_path = "/home/jebineinstein/git/CaptionCreator/media/movie_x_pic/Leaving Las Vegas 1995ANekPWfXeU_captioned_movie_review.png"
+		file_path = "test.png"
 	)
