@@ -1,17 +1,17 @@
-from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUIChat, MetaUIChat, grok_ui_chat, CopilotUIChat, QwenUIChat
+from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUIChat, MetaUIChat, GrokUIChat, CopilotUIChat, QwenUIChat
 from browser_manager.browser_manager import BrowserConfig
 import os
 
 config = BrowserConfig()
-config.user_data_dir = os.getenv("PROFILE_PATH", None)
+config.user_data_dir = os.getenv("PROFILE_PATH_1", None)
 
-baseUIChat = MetaUIChat(config)
+baseUIChat = GrokUIChat(config)
 result = baseUIChat.chat(
 	user_prompt=(
 		"Describe what is happening in this video frame as if you're telling a story. "
 		"Focus on the main subjects, their actions, the setting, and any important "
 		"details that would help someone understand the scene's context. "
-		"Max word: 100 ONLY"
+		"Keep your description to exactly 100 words or fewer."
 	),
 	file_path="test.png"
 )

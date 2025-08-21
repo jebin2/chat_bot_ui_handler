@@ -78,7 +78,7 @@ if __name__ == "__main__":
 			"Describe what is happening in this video frame as if you're telling a story. "
 			"Focus on the main subjects, their actions, the setting, and any important "
 			"details that would help someone understand the scene's context. "
-			"Max word: 100 ONLY"
+			"Keep your description to exactly 100 words or fewer."
 		),
 		file_path = "test.png"
 	)

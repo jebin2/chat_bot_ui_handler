@@ -14,7 +14,7 @@ from .qwen.handler import QwenUIChat
 from .perplexity.handler import PerplexityUIChat
 from .gemini.handler import GeminiUIChat
 from .meta.handler import MetaUIChat
-from .grok.handler import grok_ui_chat
+from .grok.handler import GrokUIChat
 from .copilot.handler import CopilotUIChat
 
 from dotenv import load_dotenv
@@ -32,6 +32,6 @@ __all__ = [
     "PerplexityUIChat",
     "GeminiUIChat",
     "MetaUIChat",
-    "grok_ui_chat",
+    "GrokUIChat",
     "CopilotUIChat",
 ]

@@ -1,5 +1,5 @@
 """AI Studio automation module"""
 
-from .handler import grok_ui_chat
+from .handler import GrokUIChat
 
-__all__ = ["grok_ui_chat"]
+__all__ = ["GrokUIChat"]
