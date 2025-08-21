@@ -9,7 +9,7 @@ __version__ = "0.1.0"
 from .base_ui_flow import BaseUIChat
 from .aistudio.handler import run_gemini_generation
 from .search_google.ai_mode import GoogleAISearchChat
-from .pally.handler import get_caption_from_pally
+from .pally.handler import PallyUIChat
 from .qwen.handler import QwenUIChat
 from .perplexity.handler import PerplexityUIChat
 from .gemini.handler import GeminiUIChat
@@ -27,7 +27,7 @@ __all__ = [
     "BaseUIChat",
     "run_gemini_generation",
     "GoogleAISearchChat",
-    "get_caption_from_pally",
+    "PallyUIChat",
     "QwenUIChat",
     "PerplexityUIChat",
     "GeminiUIChat",

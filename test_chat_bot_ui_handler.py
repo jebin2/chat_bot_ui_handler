@@ -1,11 +1,11 @@
-from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUIChat, MetaUIChat, GrokUIChat, CopilotUIChat, QwenUIChat
+from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUIChat, MetaUIChat, GrokUIChat, CopilotUIChat, QwenUIChat, PallyUIChat
 from browser_manager.browser_manager import BrowserConfig
 import os
 
 config = BrowserConfig()
 config.user_data_dir = os.getenv("PROFILE_PATH_1", None)
 
-baseUIChat = GrokUIChat(config)
+baseUIChat = PallyUIChat(config)
 result = baseUIChat.chat(
 	user_prompt=(
 		"Describe what is happening in this video frame as if you're telling a story. "

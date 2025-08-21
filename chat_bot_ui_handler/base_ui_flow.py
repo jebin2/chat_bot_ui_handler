@@ -63,8 +63,13 @@ class BaseUIChat(ABC):
 			file_input = page.locator(selectors.get("input_file", 'input[type="file"]')).first
 			file_input.wait_for(state="attached", timeout=5000)
 			file_input.set_input_files(self.compressed_path)
-			logger_config.info("File uploaded successfully")
 			page.wait_for_timeout(5000)
+			input_file_wait_selector = selectors.get("input_file_wait_selector", None)
+			if input_file_wait_selector:
+				page.wait_for_selector(input_file_wait_selector, timeout=15000)
+				page.wait_for_timeout(1000)
+			logger_config.info("File uploaded successfully")
+
 			self.save_screenshot(page)
 
 	def fill_prompt(self, page, user_prompt, system_prompt=None):
