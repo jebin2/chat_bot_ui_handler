@@ -11,7 +11,7 @@ class GeminiUIChat(BaseUIChat):
 		return {
 			'input': 'rich-textarea div.ql-editor[contenteditable="true"]',
 			'send_button': 'button[aria-label="Send message"]',
-			'wait_selector': 'button[aria-label="Microphone"]',
+			'wait_selector': 'message-content',
 			'result': 'message-content'
 		}
 

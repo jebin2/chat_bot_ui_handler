@@ -8,10 +8,10 @@ class MetaUIChat(BaseUIChat):
 	def __init__(self, config=None):
 		super().__init__(config)
 		# Set up additional docker flags
-		additional_flags = []
-		additional_flags.append(f'-v {os.getcwd()}/{os.getenv("TEMP_OUTPUT", "chat_bot_ui_handler_logs")}:/home/neko/Downloads')
-		additional_flags.append(f'-v {os.getenv("POLICY_PATH", "POLICY_PATH")}:/etc/opt/chrome/policies/managed/policies.json')
-		self.config.additionl_docker_flag = ' '.join(additional_flags)
+		# additional_flags = []
+		# additional_flags.append(f'-v {os.getcwd()}/{os.getenv("TEMP_OUTPUT", "chat_bot_ui_handler_logs")}:/home/neko/Downloads')
+		# additional_flags.append(f'-v {os.getenv("POLICY_PATH", "POLICY_PATH")}:/etc/opt/chrome/policies/managed/policies.json')
+		# self.config.additionl_docker_flag = ' '.join(additional_flags)
 
 	def get_docker_name(self):
 		return "meta_ui_chat"

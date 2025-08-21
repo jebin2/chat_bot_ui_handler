@@ -6,15 +6,15 @@ import os
 from playwright.sync_api import expect
 
 class AIStudioUIChat(BaseUIChat):
-	def __init__(self, config=None, folder_path=None):
+	def __init__(self, config=None):
 		super().__init__(config)
 		# Set up additional docker flags
-		additional_flags = []
-		if folder_path:
-			additional_flags.append(f'-v {folder_path}:/home/neko/Downloads')
-		additional_flags.append(f'-v {os.getenv("POLICY_PATH", "POLICY_PATH")}:/etc/opt/chrome/policies/managed/policies.json')
-		if additional_flags:
-			self.config.additionl_docker_flag = ' '.join(additional_flags)
+		# additional_flags = []
+		# if folder_path:
+		# 	additional_flags.append(f'-v {folder_path}:/home/neko/Downloads')
+		# additional_flags.append(f'-v {os.getenv("POLICY_PATH", "POLICY_PATH")}:/etc/opt/chrome/policies/managed/policies.json')
+		# if additional_flags:
+		# 	self.config.additionl_docker_flag = ' '.join(additional_flags)
 
 	def get_docker_name(self):
 		return "aistudio_ui_handler"
