@@ -1,5 +1,5 @@
 """AI Studio automation module"""
 
-from .handler import qwen_ui_chat
+from .handler import QwenUIChat
 
-__all__ = ["qwen_ui_chat"]
+__all__ = ["QwenUIChat"]

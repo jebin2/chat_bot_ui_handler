@@ -6,15 +6,16 @@ Chat Bot UI Handler - A package for automating various chatbot UI interactions
 __version__ = "0.1.0"
 
 # Import main functions for easy access
+from .base_ui_flow import BaseUIChat
 from .aistudio.handler import run_gemini_generation
 from .search_google.ai_mode import search_google_ai_mode
 from .pally.handler import get_caption_from_pally
-from .qwen.handler import qwen_ui_chat
+from .qwen.handler import QwenUIChat
 from .perplexity.handler import perplexity_ui_chat
 from .gemini.handler import gemini_ui_chat
 from .meta.handler import meta_ui_chat
 from .grok.handler import grok_ui_chat
-from .copilot.handler import copilot_ui_chat
+from .copilot.handler import CopilotUIChat
 
 from dotenv import load_dotenv
 import os
@@ -23,13 +24,14 @@ if os.path.exists(".env"):
     load_dotenv()
 
 __all__ = [
+    "BaseUIChat",
     "run_gemini_generation",
     "search_google_ai_mode",
     "get_caption_from_pally",
-    "qwen_ui_chat",
+    "QwenUIChat",
     "perplexity_ui_chat",
     "gemini_ui_chat",
     "meta_ui_chat",
     "grok_ui_chat",
-    "copilot_ui_chat",
+    "CopilotUIChat",
 ]
