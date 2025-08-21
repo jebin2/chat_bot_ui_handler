@@ -6,7 +6,6 @@ import os
 import traceback
 from abc import ABC, abstractmethod
 
-
 class BaseUIChat(ABC):
 	def __init__(self, config=None):
 		self.config = config or BrowserConfig()

@@ -7,7 +7,7 @@ __version__ = "0.1.0"
 
 # Import main functions for easy access
 from .base_ui_flow import BaseUIChat
-from .aistudio.handler import run_gemini_generation
+from .aistudio.handler import AIStudioUIChat
 from .search_google.ai_mode import GoogleAISearchChat
 from .pally.handler import PallyUIChat
 from .qwen.handler import QwenUIChat
@@ -25,7 +25,7 @@ if os.path.exists(".env"):
 
 __all__ = [
     "BaseUIChat",
-    "run_gemini_generation",
+    "AIStudioUIChat",
     "GoogleAISearchChat",
     "PallyUIChat",
     "QwenUIChat",
