@@ -1,5 +1,5 @@
 """Google Search AI Mode automation module"""
 
-from .ai_mode import search_google_ai_mode
+from .ai_mode import GoogleAISearchChat
 
-__all__ = ["search_google_ai_mode"]
+__all__ = ["GoogleAISearchChat"]

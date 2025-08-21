@@ -1,7 +1,4 @@
 from chat_bot_ui_handler.base_ui_flow import BaseUIChat
-from custom_logger import logger_config
-from gemiwrap.utils import compress_image
-import os
 
 class GeminiUIChat(BaseUIChat):
 	def get_docker_name(self):

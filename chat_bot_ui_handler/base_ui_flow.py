@@ -47,10 +47,11 @@ class BaseUIChat(ABC):
 
 	def upload_file(self, page, file_path):
 		if file_path:
+			selectors = self.get_selectors()
 			self.compressed_path = os.path.abspath(compress_image(file_path))
 			logger_config.info(f"Uploading file: {self.compressed_path}")
 			self.show_input_file_tag(page)
-			file_input = page.locator('input[type="file"]').first
+			file_input = page.locator(selectors.get("input_file", 'input[type="file"]')).first
 			file_input.wait_for(state="attached", timeout=5000)
 			file_input.set_input_files(self.compressed_path)
 			logger_config.info("File uploaded successfully")
@@ -79,6 +80,9 @@ class BaseUIChat(ABC):
 		page.wait_for_timeout(2000)
 		self.save_screenshot(page)
 
+	def post_process_response(self, result):
+		return result
+
 	def get_response(self, page):
 		selectors = self.get_selectors()
 		logger_config.info(f"Waiting for results in '{selectors['wait_selector']}' container...")
@@ -86,6 +90,7 @@ class BaseUIChat(ABC):
 		page.wait_for_timeout(2000)
 
 		result_text = page.locator(selectors['result']).last.inner_text()
+		result_text = self.post_process_response(result_text)
 		logger_config.info("Result fetched successfully")
 		print("Result:", result_text)
 		self.save_screenshot(page)

@@ -1,12 +1,12 @@
-from chat_bot_ui_handler import PerplexityUIChat, search_google_ai_mode, GeminiUIChat, meta_ui_chat, grok_ui_chat, CopilotUIChat, QwenUIChat
+from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUIChat, meta_ui_chat, grok_ui_chat, CopilotUIChat, QwenUIChat
 from browser_manager.browser_manager import BrowserConfig
 import os
 
 config = BrowserConfig()
 config.user_data_dir = os.getenv("PROFILE_PATH", None)
 
-copilot = QwenUIChat(config)
-result = copilot.chat(
+baseUIChat = GoogleAISearchChat(config)
+result = baseUIChat.chat(
 	user_prompt=(
 		"Describe what is happening in this video frame as if you're telling a story. "
 		"Focus on the main subjects, their actions, the setting, and any important "
