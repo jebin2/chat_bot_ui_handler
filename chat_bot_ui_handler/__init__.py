@@ -11,7 +11,7 @@ from .aistudio.handler import run_gemini_generation
 from .search_google.ai_mode import search_google_ai_mode
 from .pally.handler import get_caption_from_pally
 from .qwen.handler import QwenUIChat
-from .perplexity.handler import perplexity_ui_chat
+from .perplexity.handler import PerplexityUIChat
 from .gemini.handler import gemini_ui_chat
 from .meta.handler import meta_ui_chat
 from .grok.handler import grok_ui_chat
@@ -29,7 +29,7 @@ __all__ = [
     "search_google_ai_mode",
     "get_caption_from_pally",
     "QwenUIChat",
-    "perplexity_ui_chat",
+    "PerplexityUIChat",
     "gemini_ui_chat",
     "meta_ui_chat",
     "grok_ui_chat",
