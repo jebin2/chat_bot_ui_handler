@@ -12,7 +12,7 @@ from .search_google.ai_mode import search_google_ai_mode
 from .pally.handler import get_caption_from_pally
 from .qwen.handler import QwenUIChat
 from .perplexity.handler import PerplexityUIChat
-from .gemini.handler import gemini_ui_chat
+from .gemini.handler import GeminiUIChat
 from .meta.handler import meta_ui_chat
 from .grok.handler import grok_ui_chat
 from .copilot.handler import CopilotUIChat
@@ -30,7 +30,7 @@ __all__ = [
     "get_caption_from_pally",
     "QwenUIChat",
     "PerplexityUIChat",
-    "gemini_ui_chat",
+    "GeminiUIChat",
     "meta_ui_chat",
     "grok_ui_chat",
     "CopilotUIChat",

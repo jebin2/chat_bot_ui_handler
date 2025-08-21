@@ -41,11 +41,17 @@ class BaseUIChat(ABC):
 		"""Override this method if login is required"""
 		pass
 
+	def show_input_file_tag(self, page):
+		"""Override this method if show_input_file_tag is required"""
+		pass
+
 	def upload_file(self, page, file_path):
 		if file_path:
 			self.compressed_path = os.path.abspath(compress_image(file_path))
 			logger_config.info(f"Uploading file: {self.compressed_path}")
+			self.show_input_file_tag(page)
 			file_input = page.locator('input[type="file"]').first
+			file_input.wait_for(state="attached", timeout=5000)
 			file_input.set_input_files(self.compressed_path)
 			logger_config.info("File uploaded successfully")
 			page.wait_for_timeout(5000)
@@ -117,10 +123,12 @@ class BaseUIChat(ABC):
 				finally:
 					if self.compressed_path:
 						os.remove(self.compressed_path)
+						self.compressed_path = None
 		except:
 			pass
 		finally:
 			if self.compressed_path:
 				os.remove(self.compressed_path)
+				self.compressed_path = None
 
 		return None

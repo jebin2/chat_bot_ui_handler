@@ -1,5 +1,5 @@
 """AI Studio automation module"""
 
-from .handler import gemini_ui_chat
+from .handler import GeminiUIChat
 
-__all__ = ["gemini_ui_chat"]
+__all__ = ["GeminiUIChat"]

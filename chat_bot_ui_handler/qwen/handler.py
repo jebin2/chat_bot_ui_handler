@@ -10,7 +10,7 @@ class QwenUIChat(BaseUIChat):
 	def get_selectors(self):
 		return {
 			'input': 'textarea[id="chat-input"]',
-			'send_button': 'button[type="submit"]',
+			'send_button': '#send-message-button',
 			'wait_selector': '#send-message-button',
 			'result': '#response-message-body'
 		}
