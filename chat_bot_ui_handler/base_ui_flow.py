@@ -12,6 +12,13 @@ class BaseUIChat(ABC):
 		self.config = config or BrowserConfig()
 		self.config.docker_name = self.get_docker_name()
 		self.compressed_path = None
+		self.browser_manager = None
+
+	def get_browser_manager(self):
+		if not self.browser_manager:
+			self.browser_manager = BrowserManager(self.config)
+
+		return self.browser_manager
 
 	@abstractmethod
 	def get_docker_name(self):
@@ -47,10 +54,12 @@ class BaseUIChat(ABC):
 
 	def upload_file(self, page, file_path):
 		if file_path:
+			self.show_input_file_tag(page)
+
 			selectors = self.get_selectors()
 			self.compressed_path = os.path.abspath(compress_image(file_path))
 			logger_config.info(f"Uploading file: {self.compressed_path}")
-			self.show_input_file_tag(page)
+
 			file_input = page.locator(selectors.get("input_file", 'input[type="file"]')).first
 			file_input.wait_for(state="attached", timeout=5000)
 			file_input.set_input_files(self.compressed_path)
@@ -105,7 +114,7 @@ class BaseUIChat(ABC):
 
 	def chat(self, user_prompt, system_prompt=None, file_path=None):
 		try:
-			with BrowserManager(self.config) as page:
+			with self.get_browser_manager() as page:
 				try:
 					self.load_url(page)
 

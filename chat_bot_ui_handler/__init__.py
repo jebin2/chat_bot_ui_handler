@@ -13,7 +13,7 @@ from .pally.handler import get_caption_from_pally
 from .qwen.handler import QwenUIChat
 from .perplexity.handler import PerplexityUIChat
 from .gemini.handler import GeminiUIChat
-from .meta.handler import meta_ui_chat
+from .meta.handler import MetaUIChat
 from .grok.handler import grok_ui_chat
 from .copilot.handler import CopilotUIChat
 
@@ -31,7 +31,7 @@ __all__ = [
     "QwenUIChat",
     "PerplexityUIChat",
     "GeminiUIChat",
-    "meta_ui_chat",
+    "MetaUIChat",
     "grok_ui_chat",
     "CopilotUIChat",
 ]
