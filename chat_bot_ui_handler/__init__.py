@@ -14,6 +14,7 @@ from .perplexity.handler import perplexity_ui_chat
 from .gemini.handler import gemini_ui_chat
 from .meta.handler import meta_ui_chat
 from .grok.handler import grok_ui_chat
+from .copilot.handler import copilot_ui_chat
 
 from dotenv import load_dotenv
 import os
@@ -30,4 +31,5 @@ __all__ = [
     "gemini_ui_chat",
     "meta_ui_chat",
     "grok_ui_chat",
+    "copilot_ui_chat",
 ]
