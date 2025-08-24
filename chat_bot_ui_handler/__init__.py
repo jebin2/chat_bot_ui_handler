@@ -17,6 +17,7 @@ from .meta.handler import MetaUIChat
 from .grok.handler import GrokUIChat
 from .copilot.handler import CopilotUIChat
 from .bing.handler import BingUIChat
+from .mistral.handler import MistralUIChat
 
 from dotenv import load_dotenv
 import os
@@ -36,4 +37,5 @@ __all__ = [
     "GrokUIChat",
     "CopilotUIChat",
     "BingUIChat",
+    "MistralUIChat",
 ]
