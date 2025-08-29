@@ -6,6 +6,7 @@ Handles automated interactions with Google AI Studio for content generation
 import os
 import time
 import subprocess
+import json
 from pathlib import Path
 from typing import Optional, Union, Dict, Any
 from functools import partial
@@ -105,7 +106,7 @@ class AIStudioConfig:
 	RUN_TIMEOUT = 60 * 60 * 1000  # 1 hour
 	
 	# URLs
-	NEW_CHAT_URL = "https://aistudio.google.com/prompts/new_chat"
+	NEW_CHAT_URL = "https://aistudio.google.com/prompts/new_chat?model=gemini-2.5-pro"
 	GEMINI_NEW_CHAT_URL = "https://gemini.google.com/app"
 	
 	# Default content
@@ -452,6 +453,11 @@ User Prompt: {prompt_content}""")
 		self.logger.info("=== Starting AI Studio Session ===")
 		
 		try:
+			try:
+				with open(os.getenv("COOKIE_1"), "r") as f:
+					saved_cookies = json.load(f)
+				page.context.add_cookies(saved_cookies)
+			except: pass
 			# Step 1: Navigate to new chat
 			self.navigate_to_new_chat(page)
 			if not self.use_gemini:
