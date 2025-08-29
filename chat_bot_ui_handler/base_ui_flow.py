@@ -5,6 +5,7 @@ from gemiwrap.utils import compress_image
 import os
 import traceback
 from abc import ABC, abstractmethod
+import json
 
 class BaseUIChat(ABC):
 	def __init__(self, config=None):
@@ -50,6 +51,9 @@ class BaseUIChat(ABC):
 	def show_input_file_tag(self, page):
 		"""Override this method if show_input_file_tag is required"""
 		pass
+
+	def get_cookie_path(self):
+		return os.getenv("COOKIE_1")
 
 	def upload_file(self, page, file_path):
 		if file_path:
@@ -120,6 +124,12 @@ class BaseUIChat(ABC):
 		try:
 			with self.get_browser_manager() as page:
 				try:
+					try:
+						with open(self.get_cookie_path(), "r") as f:
+							saved_cookies = json.load(f)
+						page.context.add_cookies(saved_cookies)
+					except: pass
+
 					self.load_url(page)
 
 					self.login(page)

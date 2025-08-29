@@ -5,7 +5,7 @@ import os
 config = BrowserConfig()
 config.user_data_dir = os.getenv("PROFILE_PATH", None)
 
-baseUIChat = MistralUIChat(config)
+baseUIChat = CopilotUIChat(config)
 result = baseUIChat.chat(
 	user_prompt=(
 		"Describe what is happening in this video frame as if you're telling a story. "

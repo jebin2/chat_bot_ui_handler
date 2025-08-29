@@ -1,4 +1,5 @@
 from chat_bot_ui_handler.base_ui_flow import BaseUIChat
+import os
 
 class GrokUIChat(BaseUIChat):
     def get_docker_name(self):
@@ -14,3 +15,6 @@ class GrokUIChat(BaseUIChat):
             'wait_selector': 'button[aria-label="Enter voice mode"]',
             'result': '#last-reply-container .message-bubble'
         }
+
+    def get_cookie_path(self):
+        return os.getenv("COOKIE_2")
