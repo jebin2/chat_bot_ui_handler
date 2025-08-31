@@ -104,7 +104,7 @@ class BaseUIChat(ABC):
 		selectors = self.get_selectors()
 		logger_config.info(f"Waiting for results in '{selectors['wait_selector']}' container...")
 		page.wait_for_selector(selectors['wait_selector'], timeout=15000)
-		page.wait_for_timeout(2000)
+		page.wait_for_timeout(10000)
 
 		result_text = page.locator(selectors['result']).last.inner_text()
 		result_text = self.post_process_response(result_text)
