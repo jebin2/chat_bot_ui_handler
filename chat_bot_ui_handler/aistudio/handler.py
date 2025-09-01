@@ -69,8 +69,7 @@ class AIStudioUIChat(BaseUIChat):
 
 	def upload_file(self, page, file_path):
 		if file_path:
-			neko_path = f'/home/neko/Downloads/{file_path}'
-			logger_config.info(f"Uploading file: {neko_path}")
+			logger_config.info(f"Uploading file: {file_path}")
 
 			page.locator('button[aria-label="Insert assets such as images, videos, files, or audio"]').click()
 			page.wait_for_timeout(2000)
@@ -85,7 +84,7 @@ class AIStudioUIChat(BaseUIChat):
 				self.get_browser_manager().launcher.choose_file_via_xdotool, 
 				config=self.config
 			)
-			choose_file_via_xdotool(file_path=neko_path)
+			choose_file_via_xdotool(file_path=file_path)
 			self.save_screenshot(page)
 			self._acknowledge_copyright(page)
 			self.save_screenshot(page)
