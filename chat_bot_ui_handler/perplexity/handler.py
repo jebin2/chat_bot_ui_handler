@@ -1,6 +1,5 @@
 from chat_bot_ui_handler.base_ui_flow import BaseUIChat
 from custom_logger import logger_config
-from gemiwrap.utils import compress_image
 import os
 
 class PerplexityUIChat(BaseUIChat):
@@ -29,10 +28,9 @@ class PerplexityUIChat(BaseUIChat):
         logger_config.info("Clicking upload button...")
         page.click(upload_button_selector)
 
-        self.compressed_path = os.path.abspath(compress_image(file_path))
-        logger_config.info(f"Uploading file: {self.compressed_path}")
+        logger_config.info(f"Uploading file: {file_path}")
         file_input = page.locator('input[type="file"]').first
-        file_input.set_input_files(self.compressed_path)
+        file_input.set_input_files(file_path)
 
         logger_config.info("Waiting for upload preview or cancel button (max 20s)...")
         page.wait_for_timeout(2000)

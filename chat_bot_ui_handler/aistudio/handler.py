@@ -1,7 +1,6 @@
 from functools import partial
 from chat_bot_ui_handler.base_ui_flow import BaseUIChat
 from custom_logger import logger_config
-from gemiwrap.utils import compress_image
 import os
 from playwright.sync_api import expect
 
@@ -70,9 +69,7 @@ class AIStudioUIChat(BaseUIChat):
 
 	def upload_file(self, page, file_path):
 		if file_path:
-			cur_path = compress_image(file_path)
-			neko_path = f'/home/neko/Downloads/{os.path.basename(cur_path)}'
-			self.compressed_path = os.path.abspath(cur_path)
+			neko_path = f'/home/neko/Downloads/{file_path}'
 			logger_config.info(f"Uploading file: {neko_path}")
 
 			page.locator('button[aria-label="Insert assets such as images, videos, files, or audio"]').click()

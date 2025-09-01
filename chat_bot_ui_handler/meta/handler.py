@@ -1,7 +1,6 @@
 from functools import partial
 from chat_bot_ui_handler.base_ui_flow import BaseUIChat
 from custom_logger import logger_config
-from gemiwrap.utils import compress_image
 import os
 
 class MetaUIChat(BaseUIChat):
@@ -41,9 +40,7 @@ class MetaUIChat(BaseUIChat):
 		if file_path:
 			self.show_input_file_tag(page)
 
-			cur_path = compress_image(file_path)
-			neko_path = f'/home/neko/Downloads/{os.path.basename(cur_path)}'
-			self.compressed_path = os.path.abspath(cur_path)
+			neko_path = f'/home/neko/Downloads/{file_path}'
 			logger_config.info(f"Uploading file: {neko_path}")
 			
 			# Use xdotool for file selection

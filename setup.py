@@ -8,7 +8,6 @@ setup(
 		"python-dotenv",
 		"json-repair",
 		"custom_logger @ git+https://github.com/jebin2/custom_logger.git",
-		"gemiwrap @ git+https://github.com/jebin2/gemiwrap.git",
 		"browser_manager @ git+https://github.com/jebin2/browser_manager.git"
 	],
     author="Jebin Einstein",
@@ -16,7 +15,7 @@ setup(
     description="A package for automating various chatbot UI interactions",
 	long_description=open("README.md").read(),
 	long_description_content_type="text/markdown",
-	url="https://github.com/jebin2/gemiwrap",  # Your repo URL
+	url="https://github.com/jebin2/chat_bot_ui_handler",  # Your repo URL
 	classifiers=[
 		"Programming Language :: Python :: 3",
 		"License :: OSI Approved :: MIT License",  # Choose a license

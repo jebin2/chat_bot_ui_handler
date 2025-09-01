@@ -1,7 +1,6 @@
 from browser_manager import BrowserManager
 from browser_manager.browser_config import BrowserConfig
 from custom_logger import logger_config
-from gemiwrap.utils import compress_image
 import os
 import traceback
 from abc import ABC, abstractmethod
@@ -11,7 +10,6 @@ class BaseUIChat(ABC):
 	def __init__(self, config=None):
 		self.config = config or BrowserConfig()
 		self.config.docker_name = self.get_docker_name()
-		self.compressed_path = None
 		self.browser_manager = None
 
 	def get_browser_manager(self):
@@ -60,12 +58,11 @@ class BaseUIChat(ABC):
 			self.show_input_file_tag(page)
 
 			selectors = self.get_selectors()
-			self.compressed_path = os.path.abspath(compress_image(file_path))
-			logger_config.info(f"Uploading file: {self.compressed_path}")
+			logger_config.info(f"Uploading file: {file_path}")
 
 			file_input = page.locator(selectors.get("input_file", 'input[type="file"]')).first
 			file_input.wait_for(state="attached", timeout=5000)
-			file_input.set_input_files(self.compressed_path)
+			file_input.set_input_files(file_path)
 			page.wait_for_timeout(5000)
 			input_file_wait_selector = selectors.get("input_file_wait_selector", None)
 			if input_file_wait_selector:
@@ -148,15 +145,7 @@ class BaseUIChat(ABC):
 						self.save_screenshot(page)
 					except:
 						pass
-				finally:
-					if self.compressed_path:
-						os.remove(self.compressed_path)
-						self.compressed_path = None
 		except:
 			pass
-		finally:
-			if self.compressed_path:
-				os.remove(self.compressed_path)
-				self.compressed_path = None
 
 		return None
