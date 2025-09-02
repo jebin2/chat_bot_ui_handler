@@ -40,6 +40,10 @@ class BaseUIChat(ABC):
 		page.goto(url, wait_until='domcontentloaded')
 		logger_config.info("Page loaded successfully, waiting 5s for content...")
 		page.wait_for_timeout(5000)
+		page.keyboard.press("Escape")
+		page.wait_for_timeout(1000)
+		page.keyboard.press("Escape")
+		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
 
 	def login(self, page):
