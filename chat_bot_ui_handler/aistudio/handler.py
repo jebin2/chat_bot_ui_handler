@@ -16,7 +16,7 @@ class AIStudioUIChat(BaseUIChat):
 		# 	self.config.additionl_docker_flag = ' '.join(additional_flags)
 
 	def get_docker_name(self):
-		return "aistudio_ui_handler"
+		return f"{self.config.docker_name}_aistudio_ui_handler"
 
 	def get_url(self):
 		return "https://aistudio.google.com/prompts/new_chat?model=gemini-2.5-pro"
