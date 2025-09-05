@@ -2,7 +2,7 @@ from chat_bot_ui_handler.base_ui_flow import BaseUIChat
 
 class PallyUIChat(BaseUIChat):
     def get_docker_name(self):
-        return "pally_search_caption"
+        return f"{self.config.docker_name}_pally_search_caption"
 
     def get_url(self):
         return "https://pallyy.com/tools/image-description-generator"

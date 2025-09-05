@@ -2,7 +2,7 @@ from chat_bot_ui_handler.base_ui_flow import BaseUIChat
 
 class QwenUIChat(BaseUIChat):
 	def get_docker_name(self):
-		return "qwen_ui_chat"
+		return f"{self.config.docker_name}_qwen_ui_chat"
 
 	def get_url(self):
 		return "https://chat.qwen.ai/"

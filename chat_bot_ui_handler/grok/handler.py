@@ -3,7 +3,7 @@ import os
 
 class GrokUIChat(BaseUIChat):
     def get_docker_name(self):
-        return "grok_ui_chat"
+        return f"{self.config.docker_name}_grok_ui_chat"
 
     def get_url(self):
         return "https://grok.com/"

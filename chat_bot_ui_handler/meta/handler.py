@@ -13,7 +13,7 @@ class MetaUIChat(BaseUIChat):
 		# self.config.additionl_docker_flag = ' '.join(additional_flags)
 
 	def get_docker_name(self):
-		return "meta_ui_chat"
+		return f"{self.config.docker_name}_meta_ui_chat"
 
 	def get_url(self):
 		return "https://www.meta.ai"

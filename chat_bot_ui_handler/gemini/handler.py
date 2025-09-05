@@ -2,7 +2,7 @@ from chat_bot_ui_handler.base_ui_flow import BaseUIChat
 
 class GeminiUIChat(BaseUIChat):
 	def get_docker_name(self):
-		return "gemini_ui_chat"
+		return f"{self.config.docker_name}_gemini_ui_chat"
 
 	def get_url(self):
 		return "https://gemini.google.com/"

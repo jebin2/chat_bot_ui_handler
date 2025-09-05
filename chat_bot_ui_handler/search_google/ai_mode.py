@@ -3,7 +3,7 @@ from custom_logger import logger_config
 
 class GoogleAISearchChat(BaseUIChat):
 	def get_docker_name(self):
-		return "search_google_ai_mode"
+		return f"{self.config.docker_name}_search_google_ai_mode"
 
 	def get_url(self):
 		return "https://www.google.com/"

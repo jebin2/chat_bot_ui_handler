@@ -4,7 +4,7 @@ import os
 
 class PerplexityUIChat(BaseUIChat):
     def get_docker_name(self):
-        return "perplexity_ui_chat"
+        return f"{self.config.docker_name}_perplexity_ui_chat"
 
     def get_url(self):
         return "https://perplexity.ai"
