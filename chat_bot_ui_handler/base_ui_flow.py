@@ -152,7 +152,7 @@ class BaseUIChat(ABC):
 	def quick_chat(self, user_prompt, system_prompt=None, file_path=None):
 		try:
 			with self.get_browser_manager() as page:
-				self.process(page, user_prompt, system_prompt, file_path)
+				return self.process(page, user_prompt, system_prompt, file_path)
 		except:
 			pass
 
@@ -161,7 +161,7 @@ class BaseUIChat(ABC):
 	def chat(self, user_prompt, system_prompt=None, file_path=None):
 		try:
 			page = self.get_browser_manager().start()
-			self.process(page, user_prompt, system_prompt, file_path)
+			return self.process(page, user_prompt, system_prompt, file_path)
 		except:
 			pass
 
