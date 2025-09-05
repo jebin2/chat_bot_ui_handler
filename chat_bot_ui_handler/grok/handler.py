@@ -15,6 +15,3 @@ class GrokUIChat(BaseUIChat):
             'wait_selector': 'button[aria-label="Enter voice mode"]',
             'result': '#last-reply-container .message-bubble'
         }
-
-    def get_cookie_path(self):
-        return os.getenv("COOKIE_2")

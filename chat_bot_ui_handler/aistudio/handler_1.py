@@ -453,11 +453,6 @@ User Prompt: {prompt_content}""")
 		self.logger.info("=== Starting AI Studio Session ===")
 		
 		try:
-			try:
-				with open(os.getenv("COOKIE_1"), "r") as f:
-					saved_cookies = json.load(f)
-				page.context.add_cookies(saved_cookies)
-			except: pass
 			# Step 1: Navigate to new chat
 			self.navigate_to_new_chat(page)
 			if not self.use_gemini:

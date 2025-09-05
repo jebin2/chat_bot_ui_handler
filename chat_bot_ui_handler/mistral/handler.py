@@ -16,6 +16,10 @@ class MistralUIChat(BaseUIChat):
 			'result': 'div[data-message-part-type="answer"]'
 		}
 
+	def add_wait_res(self, page):
+		page.wait_for_timeout(1000)
+		page.wait_for_selector('button[aria-label="Voice Mode"]', timeout=10000)
+
 	def show_input_file_tag(self, page):
 		page.locator('button[aria-label="Add files"]').click()
 		page.wait_for_timeout(5000)

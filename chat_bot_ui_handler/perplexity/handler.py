@@ -17,9 +17,6 @@ class PerplexityUIChat(BaseUIChat):
             'result': 'div[id*="markdown-content"]'
         }
 
-    def get_cookie_path(self):
-        return os.getenv("COOKIE_2")
-
     def upload_file(self, page, file_path):
         """Custom file upload for Perplexity which requires clicking an upload button first"""
         upload_button_selector = "button[aria-label='Attach files']"

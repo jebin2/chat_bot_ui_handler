@@ -143,6 +143,9 @@ class AIStudioUIChat(BaseUIChat):
 		send_button.click()
 		self.save_screenshot(page)
 
+	def add_wait_res(self, page):
+		page.wait_for_timeout(180000)
+
 	def get_response(self, page):
 		self.save_screenshot(page)
 		selectors = self.get_selectors()

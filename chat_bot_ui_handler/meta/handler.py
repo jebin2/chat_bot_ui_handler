@@ -52,3 +52,7 @@ class MetaUIChat(BaseUIChat):
 			logger_config.info("File uploaded successfully")
 			page.wait_for_timeout(5000)
 			self.save_screenshot(page)
+
+	def add_wait_res(self, page):
+		page.wait_for_timeout(1000)
+		page.wait_for_selector(self.get_selectors()['wait_selector'], timeout=10000)

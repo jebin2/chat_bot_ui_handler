@@ -10,6 +10,10 @@ class BaseUIChat(ABC):
 	def __init__(self, config=None):
 		self.config = config or BrowserConfig()
 		self.config.docker_name = self.get_docker_name()
+		if not self.config.user_data_dir:
+			self.config.user_data_dir = f'{os.getenv("PROFILE_BASE_PATH")}/.{self.__class__.__name__.lower()}'
+			os.makedirs(self.config.user_data_dir, exist_ok=True)
+
 		self.browser_manager = None
 
 	def get_browser_manager(self):
@@ -53,9 +57,6 @@ class BaseUIChat(ABC):
 	def show_input_file_tag(self, page):
 		"""Override this method if show_input_file_tag is required"""
 		pass
-
-	def get_cookie_path(self):
-		return os.getenv("COOKIE_1")
 
 	def upload_file(self, page, file_path):
 		if file_path:
@@ -101,6 +102,9 @@ class BaseUIChat(ABC):
 	def post_process_response(self, result):
 		return result
 
+	def add_wait_res(self, page):
+		page.wait_for_timeout(10000)
+
 	def get_response(self, page):
 		selectors = self.get_selectors()
 		logger_config.info(f"Waiting for results in '{selectors['wait_selector']}' container...")
@@ -109,8 +113,7 @@ class BaseUIChat(ABC):
 				page.wait_for_selector(selectors['wait_selector'], timeout=10000)
 				break
 			except: pass
-		page.wait_for_timeout(180000)
-
+		self.add_wait_res(page)
 		result_text = page.locator(selectors['result']).last.inner_text()
 		result_text = self.post_process_response(result_text)
 		logger_config.info("Result fetched successfully")
@@ -125,35 +128,56 @@ class BaseUIChat(ABC):
 			os.mkdir(folder)
 		page.screenshot(path=f"chat_bot_ui_handler_logs/{self.get_docker_name()}.png")
 
-	def chat(self, user_prompt, system_prompt=None, file_path=None):
+	def process(self, page, user_prompt, system_prompt, file_path):
+		try:
+			self.load_url(page)
+
+			self.login(page)
+
+			self.upload_file(page, file_path)
+
+			self.fill_prompt(page, user_prompt, system_prompt)
+
+			self.send(page)
+
+			return self.get_response(page)
+
+		except Exception as e:
+			logger_config.error(f"Error during {self.get_docker_name()}: {e} {traceback.format_exc()}")
+			try:
+				self.save_screenshot(page)
+			except:
+				pass
+
+	def quick_chat(self, user_prompt, system_prompt=None, file_path=None):
 		try:
 			with self.get_browser_manager() as page:
-				try:
-					try:
-						with open(self.get_cookie_path(), "r") as f:
-							saved_cookies = json.load(f)
-						page.context.add_cookies(saved_cookies)
-					except: pass
-
-					self.load_url(page)
-
-					self.login(page)
-
-					self.upload_file(page, file_path)
-
-					self.fill_prompt(page, user_prompt, system_prompt)
-
-					self.send(page)
-
-					return self.get_response(page)
-
-				except Exception as e:
-					logger_config.error(f"Error during {self.get_docker_name()}: {e} {traceback.format_exc()}")
-					try:
-						self.save_screenshot(page)
-					except:
-						pass
+				self.process(page, user_prompt, system_prompt, file_path)
 		except:
 			pass
 
 		return None
+
+	def chat(self, user_prompt, system_prompt=None, file_path=None):
+		try:
+			page = self.get_browser_manager().start()
+			self.process(page, user_prompt, system_prompt, file_path)
+		except:
+			pass
+
+		return None
+
+	def cleanup(self):
+		if self.browser_manager:
+			try:
+				self.browser_manager.stop()
+			except Exception as e:
+				logger_config.error(f"Error while stopping browser manager: {e}")
+			finally:
+				self.browser_manager = None
+
+	def __del__(self) -> None:
+		"""Destructor cleanup."""
+		try:
+			self.cleanup()
+		except: pass

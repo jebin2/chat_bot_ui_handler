@@ -61,3 +61,6 @@ class GeminiUIChat(BaseUIChat):
 		page.locator('[data-test-id="local-image-file-uploader-button"]').click()
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
+
+	def add_wait_res(self, page):
+		page.wait_for_timeout(180000)

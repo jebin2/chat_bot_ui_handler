@@ -37,3 +37,7 @@ class QwenUIChat(BaseUIChat):
 			self.save_screenshot(page)
 		except: 
 			pass
+
+	def add_wait_res(self, page):
+		page.wait_for_timeout(1000)
+		page.wait_for_selector(self.get_selectors()['wait_selector'], timeout=10000)
