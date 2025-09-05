@@ -7,13 +7,6 @@ from playwright.sync_api import expect
 class AIStudioUIChat(BaseUIChat):
 	def __init__(self, config=None):
 		super().__init__(config)
-		# Set up additional docker flags
-		# additional_flags = []
-		# if folder_path:
-		# 	additional_flags.append(f'-v {folder_path}:/home/neko/Downloads')
-		# additional_flags.append(f'-v {os.getenv("POLICY_PATH", "POLICY_PATH")}:/etc/opt/chrome/policies/managed/policies.json')
-		# if additional_flags:
-		# 	self.config.additionl_docker_flag = ' '.join(additional_flags)
 
 	def get_docker_name(self):
 		return f"{self.config.docker_name}_aistudio_ui_handler"
@@ -24,8 +17,8 @@ class AIStudioUIChat(BaseUIChat):
 	def get_selectors(self):
 		return {
 			'input': 'div.text-input-wrapper textarea',
-			'send_button': 'button[aria-label="Run"]',
-			'wait_selector': 'button[aria-label="Run"]',
+			'send_button': 'button[type="submit"]',
+			'wait_selector': 'button[type="submit"]',
 			'result': 'ms-chat-turn div[data-turn-role="Model"]'
 		}
 
@@ -127,9 +120,11 @@ class AIStudioUIChat(BaseUIChat):
 		page.wait_for_timeout(2000)
 		self.save_screenshot(page)
 
-		run_button = page.locator(selectors['send_button'])
-		expect(run_button).to_be_enabled(timeout=30 * 60 * 1000)
-		run_button.click()
+		for _ in range(12):
+			try:
+				page.wait_for_selector(selectors['wait_selector'], timeout=10000)
+				break
+			except: pass
 		self.save_screenshot(page)
 
 	def send(self, page):
@@ -140,7 +135,7 @@ class AIStudioUIChat(BaseUIChat):
 		send_button.click(force=True)
 		logger_config.info("'Send' button clicked")
 		page.wait_for_timeout(2000)
-		send_button.click()
+		# send_button.click()
 		self.save_screenshot(page)
 
 	def add_wait_res(self, page):
@@ -150,12 +145,13 @@ class AIStudioUIChat(BaseUIChat):
 		self.save_screenshot(page)
 		selectors = self.get_selectors()
 
-		run_button = page.locator(selectors['send_button'])
-
 		logger_config.info(f"Waiting for results in 'not_to_have_text text Stop' container...")
-		expect(run_button).not_to_have_text("Stop", timeout=30 * 60 * 1000)
-		page.wait_for_timeout(2000)
-		self.add_wait_res(page)
+		for _ in range(12):
+			try:
+				page.wait_for_selector(selectors['wait_selector'], timeout=10000)
+				break
+			except: pass
+		page.wait_for_timeout(20000) # wait for 20s
 		self.save_screenshot(page)
 
 		result_text = page.locator(selectors['result']).last.inner_text()
