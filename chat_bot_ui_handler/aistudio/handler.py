@@ -155,6 +155,7 @@ class AIStudioUIChat(BaseUIChat):
 		logger_config.info(f"Waiting for results in 'not_to_have_text text Stop' container...")
 		expect(run_button).not_to_have_text("Stop", timeout=30 * 60 * 1000)
 		page.wait_for_timeout(2000)
+		self.add_wait_res(page)
 		self.save_screenshot(page)
 
 		result_text = page.locator(selectors['result']).last.inner_text()
