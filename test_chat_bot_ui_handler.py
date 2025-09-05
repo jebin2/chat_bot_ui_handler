@@ -2,12 +2,12 @@ from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUICh
 from browser_manager.browser_manager import BrowserConfig
 import os
 
-source = AIStudioUIChat
+source = GeminiUIChat
 config = BrowserConfig()
-additional_flags = []
-additional_flags.append(f'-v {os.getcwd()}:/home/neko/Downloads')
-additional_flags.append(f'-v {os.getenv("POLICY_PATH", "POLICY_PATH")}:/etc/opt/chrome/policies/managed/policies.json')
-config.additionl_docker_flag = ' '.join(additional_flags)
+# additional_flags = []
+# additional_flags.append(f'-v {os.getcwd()}:/home/neko/Downloads')
+# additional_flags.append(f'-v {os.getenv("POLICY_PATH", "POLICY_PATH")}:/etc/opt/chrome/policies/managed/policies.json')
+# config.additionl_docker_flag = ' '.join(additional_flags)
 
 baseUIChat = source(config)
 result = baseUIChat.chat(

@@ -63,4 +63,12 @@ class GeminiUIChat(BaseUIChat):
 		self.save_screenshot(page)
 
 	def add_wait_res(self, page):
-		page.wait_for_timeout(180000)
+		page.wait_for_timeout(2000)
+		page.wait_for_function(
+			"""() => {
+				const el = document.querySelectorAll('.avatar_spinner_animation')[0];
+				return el && el.style.visibility === 'hidden';
+			}"""
+		)
+		page.wait_for_timeout(2000)
+		# page.wait_for_timeout(180000)
