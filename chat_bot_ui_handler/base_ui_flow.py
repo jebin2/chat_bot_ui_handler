@@ -50,6 +50,18 @@ class BaseUIChat(ABC):
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
 
+	def force_click(self, page, selector: str):
+		el = page.locator(selector)
+		if el.count() == 0:
+			raise Exception(f"Element not found: {selector}")
+
+		pointer_events = el.evaluate("el => getComputedStyle(el).pointerEvents")
+		print(pointer_events)
+		if pointer_events == "none":
+			el.evaluate("el => el.style.pointerEvents = 'auto'")
+
+		el.click(force=True)
+
 	def login(self, page):
 		"""Override this method if login is required"""
 		pass

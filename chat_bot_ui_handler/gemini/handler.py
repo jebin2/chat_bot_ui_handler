@@ -22,36 +22,40 @@ class GeminiUIChat(BaseUIChat):
 		page.wait_for_timeout(500)
 		page.keyboard.press("Escape")
 		page.wait_for_timeout(1000)
-		page.wait_for_selector('div[data-test-id="bard-mode-menu-button"] button', state="visible")
-		page.click('div[data-test-id="bard-mode-menu-button"] button')
+		try:
+			page.wait_for_selector('div[data-test-id="bard-mode-menu-button"] button', state="visible")
+		except: pass
+		self.force_click(page, 'div[data-test-id="bard-mode-menu-button"] button')
 		dropdown_panel = page.locator('#mat-menu-panel-0')
 		if dropdown_panel.count() == 0:
 			dropdown_panel = page.locator('.menu-inner-container')
 		self.save_screenshot(page)
 
 		# Try selecting 2.5 Pro, fallback to 2.5 Flash if not found
-		menu_clicked = False
 		try:
 			dropdown_panel.locator("text=2.5 Pro").wait_for(state="visible", timeout=3000)
 			page.wait_for_timeout(2000)
 			self.save_screenshot(page)
-			dropdown_panel.locator("text=2.5 Pro").click()
+			dropdown_panel.locator("text=2.5 Pro").click(force=True)
 			menu_clicked = True
 			self.save_screenshot(page)
 			page.wait_for_timeout(2000)
 			page.wait_for_selector('rich-textarea div.ql-editor[contenteditable="true"]', state="visible", timeout=2000)
 			self.save_screenshot(page)
 		except:
-			if menu_clicked:
-				page.click('div[data-test-id="bard-mode-menu-button"] button')
-				self.save_screenshot(page)
+			page.keyboard.press("Escape")
+			page.wait_for_timeout(500)
+			page.keyboard.press("Escape")
+			page.wait_for_timeout(1000)
+			self.force_click(page, 'div[data-test-id="bard-mode-menu-button"] button')
+			self.save_screenshot(page)
 			dropdown_panel = page.locator('#mat-menu-panel-0')
 			if dropdown_panel.count() == 0:
 				dropdown_panel = page.locator('.menu-inner-container')
 			dropdown_panel.locator("text=2.5 Flash").wait_for(state="visible")
 			page.wait_for_timeout(2000)
 			self.save_screenshot(page)
-			dropdown_panel.locator("text=2.5 Flash").click()
+			dropdown_panel.locator("text=2.5 Flash").click(force=True)
 			self.save_screenshot(page)
 
 	def login(self, page):
@@ -59,10 +63,10 @@ class GeminiUIChat(BaseUIChat):
 		self.set_model(page)
 
 	def show_input_file_tag(self, page):
-		page.locator('button[aria-label="Open upload file menu"]').click()
+		page.locator('button[aria-label="Open upload file menu"]').click(force=True)
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
-		page.locator('[data-test-id="local-image-file-uploader-button"]').click()
+		page.locator('[data-test-id="local-image-file-uploader-button"]').click(force=True)
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
 
