@@ -161,6 +161,8 @@ class AIStudioAutomation:
 		page.wait_for_selector('div[data-test-id="bard-mode-menu-button"] button', state="visible")
 		page.click('div[data-test-id="bard-mode-menu-button"] button')
 		dropdown_panel = page.locator('#mat-menu-panel-0')
+		if not dropdown_panel:
+			dropdown_panel = page.locator('.menu-inner-container')
 
 		# Try selecting 2.5 Pro, fallback to 2.5 Flash if not found
 		try:

@@ -166,6 +166,8 @@ class AIStudioAutomation:
 		page.wait_for_selector('div[data-test-id="bard-mode-menu-button"] button', state="visible")
 		page.click('div[data-test-id="bard-mode-menu-button"] button')
 		dropdown_panel = page.locator('#mat-menu-panel-0')
+		if not dropdown_panel:
+			dropdown_panel = page.locator('.menu-inner-container')
 
 		# Try selecting 2.5 Pro, fallback to 2.5 Flash if not found
 		menu_clicked = False
@@ -180,6 +182,8 @@ class AIStudioAutomation:
 			if menu_clicked:
 				page.click('div[data-test-id="bard-mode-menu-button"] button')
 			dropdown_panel = page.locator('#mat-menu-panel-0')
+			if not dropdown_panel:
+				dropdown_panel = page.locator('.menu-inner-container')
 			dropdown_panel.locator("text=2.5 Flash").wait_for(state="visible")
 			page.wait_for_timeout(self.settings.DEFAULT_WAIT_TIMEOUT)
 			dropdown_panel.locator("text=2.5 Flash").click()
