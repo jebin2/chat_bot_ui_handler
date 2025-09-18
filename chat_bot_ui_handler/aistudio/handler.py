@@ -58,6 +58,8 @@ class AIStudioUIChat(BaseUIChat):
 		page.wait_for_timeout(2000)
 		page.locator('textarea[aria-label="System instructions"]').fill(system_prompt)
 		page.wait_for_timeout(2000)
+		page.locator('button[aria-label="Close panel"]').click()
+		page.wait_for_timeout(2000)
 		self.save_screenshot(page)
 
 	def upload_file(self, page, file_path):
