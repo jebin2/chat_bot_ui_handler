@@ -25,7 +25,7 @@ class GeminiUIChat(BaseUIChat):
 		page.wait_for_selector('div[data-test-id="bard-mode-menu-button"] button', state="visible")
 		page.click('div[data-test-id="bard-mode-menu-button"] button')
 		dropdown_panel = page.locator('#mat-menu-panel-0')
-		if not dropdown_panel:
+		if dropdown_panel.count() == 0:
 			dropdown_panel = page.locator('.menu-inner-container')
 		self.save_screenshot(page)
 
@@ -46,7 +46,7 @@ class GeminiUIChat(BaseUIChat):
 				page.click('div[data-test-id="bard-mode-menu-button"] button')
 				self.save_screenshot(page)
 			dropdown_panel = page.locator('#mat-menu-panel-0')
-			if not dropdown_panel:
+			if dropdown_panel.count() == 0:
 				dropdown_panel = page.locator('.menu-inner-container')
 			dropdown_panel.locator("text=2.5 Flash").wait_for(state="visible")
 			page.wait_for_timeout(2000)
