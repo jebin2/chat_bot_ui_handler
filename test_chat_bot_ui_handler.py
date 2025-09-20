@@ -1,8 +1,8 @@
-from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUIChat, MetaUIChat, GrokUIChat, CopilotUIChat, QwenUIChat, PallyUIChat, AIStudioUIChat, BingUIChat, MistralUIChat
+from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUIChat, MetaUIChat, GrokUIChat, CopilotUIChat, QwenUIChat, PallyUIChat, AIStudioUIChat, BingUIChat, MistralUIChat, MoonDream
 from browser_manager.browser_manager import BrowserConfig
 import os
 
-source = GeminiUIChat
+source = MoonDream
 config = BrowserConfig()
 # additional_flags = []
 # additional_flags.append(f'-v {os.getcwd()}:/home/neko/Downloads')

@@ -11,7 +11,7 @@ class BaseUIChat(ABC):
 		self.config = config or BrowserConfig()
 		self.config.docker_name = self.get_docker_name()
 		if not self.config.user_data_dir:
-			self.config.user_data_dir = f'{os.getenv("PROFILE_BASE_PATH")}/.{self.__class__.__name__.lower()}'
+			self.config.user_data_dir = os.path.expanduser(f'~/.{self.__class__.__name__.lower()}')
 			os.makedirs(self.config.user_data_dir, exist_ok=True)
 
 		self.browser_manager = None
