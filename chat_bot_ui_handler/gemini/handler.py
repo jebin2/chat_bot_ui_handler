@@ -26,38 +26,17 @@ class GeminiUIChat(BaseUIChat):
 			page.wait_for_selector('div[data-test-id="bard-mode-menu-button"] button', state="visible")
 		except: pass
 		self.force_click(page, 'div[data-test-id="bard-mode-menu-button"] button')
-		dropdown_panel = page.locator('#mat-menu-panel-0')
-		if dropdown_panel.count() == 0:
-			dropdown_panel = page.locator('.menu-inner-container')
+		dropdown_panel = page.locator('.menu-inner-container')
 		self.save_screenshot(page)
 		page.wait_for_timeout(2000)
 
-		# Try selecting 2.5 Pro, fallback to 2.5 Flash if not found
-		try:
-			dropdown_panel.locator("text=2.5 Pro").wait_for(state="visible", timeout=3000)
-			page.wait_for_timeout(2000)
-			self.save_screenshot(page)
-			dropdown_panel.locator("text=2.5 Pro").click(force=True)
-			menu_clicked = True
-			self.save_screenshot(page)
-			page.wait_for_timeout(2000)
-			page.wait_for_selector('rich-textarea div.ql-editor[contenteditable="true"]', state="visible", timeout=2000)
-			self.save_screenshot(page)
-		except:
-			page.keyboard.press("Escape")
-			page.wait_for_timeout(500)
-			page.keyboard.press("Escape")
-			page.wait_for_timeout(1000)
-			self.force_click(page, 'div[data-test-id="bard-mode-menu-button"] button')
-			self.save_screenshot(page)
-			dropdown_panel = page.locator('#mat-menu-panel-0')
-			if dropdown_panel.count() == 0:
-				dropdown_panel = page.locator('.menu-inner-container')
-			dropdown_panel.locator("text=2.5 Flash").wait_for(state="visible")
-			page.wait_for_timeout(2000)
-			self.save_screenshot(page)
-			dropdown_panel.locator("text=2.5 Flash").click(force=True)
-			self.save_screenshot(page)
+		# Locate all enabled buttons inside the menu container
+		enabled_buttons = dropdown_panel.locator('button[aria-disabled="false"]')
+
+		# Click the last one
+		last_button = enabled_buttons.nth(enabled_buttons.count() - 1)
+		last_button.click(force=True)
+		self.save_screenshot(page)
 
 	def login(self, page):
 		"""Custom setup after page load - set model"""

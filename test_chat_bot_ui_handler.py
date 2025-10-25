@@ -2,7 +2,7 @@ from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUICh
 from browser_manager.browser_manager import BrowserConfig
 import os
 
-source = MoonDream
+source = GeminiUIChat
 config = BrowserConfig()
 # additional_flags = []
 # additional_flags.append(f'-v {os.getcwd()}:/home/neko/Downloads')
