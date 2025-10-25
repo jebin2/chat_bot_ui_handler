@@ -30,6 +30,7 @@ class GeminiUIChat(BaseUIChat):
 		if dropdown_panel.count() == 0:
 			dropdown_panel = page.locator('.menu-inner-container')
 		self.save_screenshot(page)
+		page.wait_for_timeout(2000)
 
 		# Try selecting 2.5 Pro, fallback to 2.5 Flash if not found
 		try:
