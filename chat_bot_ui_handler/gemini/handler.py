@@ -60,5 +60,5 @@ class GeminiUIChat(BaseUIChat):
 				const el = document.querySelectorAll('.avatar_spinner_animation')[0];
 				return el && el.style.visibility === 'hidden';
 			}
-		""", timeout=10000)
+		""", timeout=30000)
 		page.wait_for_timeout(1000)

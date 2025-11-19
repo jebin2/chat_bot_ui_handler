@@ -21,7 +21,7 @@ class MistralUIChat(BaseUIChat):
 		selectors = self.get_selectors()
 		logger_config.info(f"Waiting for results in '{selectors['wait_selector']}' chat specific container...")
 		page.wait_for_timeout(5000)
-		page.wait_for_selector('button[aria-label="Voice Mode"]', timeout=20000)
+		page.wait_for_selector('button[aria-label="Voice Mode"]', timeout=30000)
 		page.wait_for_timeout(1000)
 
 	def show_input_file_tag(self, page):

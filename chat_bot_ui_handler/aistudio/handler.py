@@ -151,4 +151,3 @@ class AIStudioUIChat(BaseUIChat):
 				break
 			except: pass
 		self.save_screenshot(page)
-		self.save_screenshot(page)
