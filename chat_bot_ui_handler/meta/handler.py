@@ -70,3 +70,7 @@ class MetaUIChat(BaseUIChat):
 
 	def add_wait_res(self, page):
 		page.wait_for_timeout(1000)
+
+	def get_response_text(self, page):
+		selectors = self.get_selectors()
+		return page.locator(selectors['result']).first.inner_text()

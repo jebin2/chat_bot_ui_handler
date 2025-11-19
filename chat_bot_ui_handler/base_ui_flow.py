@@ -127,9 +127,12 @@ class BaseUIChat(ABC):
 	def add_wait_res(self, page):
 		page.wait_for_timeout(10000)
 
-	def get_response(self, page):
+	def get_response_text(self, page):
 		selectors = self.get_selectors()
-		result_text = page.locator(selectors['result']).last.inner_text()
+		return page.locator(selectors['result']).last.inner_text()
+
+	def get_response(self, page):
+		result_text = self.get_response_text(page)
 		result_text = self.post_process_response(result_text)
 		logger_config.info("Result fetched successfully")
 		print("Result:", result_text)
