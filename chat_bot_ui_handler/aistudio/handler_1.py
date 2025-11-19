@@ -106,7 +106,7 @@ class AIStudioConfig:
 	RUN_TIMEOUT = 60 * 60 * 1000  # 1 hour
 	
 	# URLs
-	NEW_CHAT_URL = "https://aistudio.google.com/prompts/new_chat?model=gemini-2.5-pro"
+	NEW_CHAT_URL = "https://aistudio.google.com/prompts/new_chat?model=gemini-3-pro-preview"
 	GEMINI_NEW_CHAT_URL = "https://gemini.google.com/app"
 	
 	# Default content

@@ -2,12 +2,15 @@ from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUICh
 from browser_manager.browser_manager import BrowserConfig
 import os
 
-source = GeminiUIChat
+source = MetaUIChat
 config = BrowserConfig()
-# additional_flags = []
-# additional_flags.append(f'-v {os.getcwd()}:/home/neko/Downloads')
-# additional_flags.append(f'-v {os.getenv("POLICY_PATH", "POLICY_PATH")}:/etc/opt/chrome/policies/managed/policies.json')
-# config.additionl_docker_flag = ' '.join(additional_flags)
+
+if source.__name__ == "MetaUIChat" or source.__name__ == "AIStudioUIChat":
+	# Set up additional docker flags
+	additional_flags = []
+	additional_flags.append(f'-v /home/jebin/git/chat_bot_ui_handler:/home/neko/Downloads')
+	additional_flags.append(f'-v /home/jebin/git/browser_manager/policies.json:/etc/opt/chrome/policies/managed/policies.json')
+	config.additionl_docker_flag = ' '.join(additional_flags)
 
 baseUIChat = source(config)
 result = baseUIChat.chat(
@@ -17,6 +20,7 @@ result = baseUIChat.chat(
 		"details that would help someone understand the scene's context. "
 		"Keep your description to exactly 100 words or fewer."
 	),
+    system_prompt="follow user prompt",
 	file_path="test.png"
 )
 # result = baseUIChat.chat(

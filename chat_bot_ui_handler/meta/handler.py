@@ -21,20 +21,20 @@ class MetaUIChat(BaseUIChat):
 	def get_selectors(self):
 		return {
 			'input': 'div[role="textbox"]',
-			'send_button': 'div[aria-label="Send message"]',
-			'wait_selector': 'div[aria-label="Send message"]',
+			'send_button': 'div[aria-label="Send"]',
+			'wait_selector': 'div[aria-label="Add media and more"] [aria-disabled="true"]',
 			'result': 'div[dir="auto"]'
 		}
 
 	def show_input_file_tag(self, page):
 		"""Custom file upload for Meta AI using xdotool"""
-		page.locator('div[aria-label="Attach a file or edit a video"]').click()
+		page.locator('div[aria-label="Add media and more"]').first.click()
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
-		page.locator('div[role="menuitem"]').last.click()
+		page.locator('div[role="menuitem"]').first.click()
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
-		page.locator('div[aria-label="Attach a file or edit a video"]').click()
+		page.locator('div[aria-label="Add media and more"]').first.click()
 
 	def upload_file(self, page, file_path):
 		if file_path:
@@ -53,6 +53,15 @@ class MetaUIChat(BaseUIChat):
 			page.wait_for_timeout(5000)
 			self.save_screenshot(page)
 
+	def wait_for_generation(self, page):
+		selectors = self.get_selectors()
+		logger_config.info(f"Waiting for results in '{selectors['wait_selector']}' chat specific container...")
+		page.wait_for_timeout(5000)
+		page.wait_for_function('''
+			() => !document.querySelector("div[aria-label='Add media and more'] [aria-disabled='true']")
+		''', timeout=10000)
+
+		self.add_wait_res(page)
+
 	def add_wait_res(self, page):
 		page.wait_for_timeout(1000)
-		page.wait_for_selector(self.get_selectors()['wait_selector'], timeout=10000)

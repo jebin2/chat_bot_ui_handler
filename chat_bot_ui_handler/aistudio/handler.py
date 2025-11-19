@@ -12,7 +12,7 @@ class AIStudioUIChat(BaseUIChat):
 		return f"{self.config.docker_name}_aistudio_ui_handler"
 
 	def get_url(self):
-		return "https://aistudio.google.com/prompts/new_chat?model=gemini-2.5-pro"
+		return "https://aistudio.google.com/prompts/new_chat?model=gemini-3-pro-preview"
 
 	def get_selectors(self):
 		return {

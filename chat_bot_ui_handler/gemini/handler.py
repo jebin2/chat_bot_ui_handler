@@ -46,7 +46,7 @@ class GeminiUIChat(BaseUIChat):
 		page.locator('button[aria-label="Open upload file menu"]').click(force=True)
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
-		page.locator('[data-test-id="local-image-file-uploader-button"]').click(force=True)
+		page.locator('[data-test-id="local-images-files-uploader-button"]').click(force=True)
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
 

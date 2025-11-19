@@ -114,10 +114,7 @@ class BaseUIChat(ABC):
 	def post_process_response(self, result):
 		return result
 
-	def add_wait_res(self, page):
-		page.wait_for_timeout(10000)
-
-	def get_response(self, page):
+	def wait_for_generation(self, page):
 		selectors = self.get_selectors()
 		logger_config.info(f"Waiting for results in '{selectors['wait_selector']}' container...")
 		for _ in range(20):
@@ -126,6 +123,12 @@ class BaseUIChat(ABC):
 				break
 			except: pass
 		self.add_wait_res(page)
+
+	def add_wait_res(self, page):
+		page.wait_for_timeout(10000)
+
+	def get_response(self, page):
+		selectors = self.get_selectors()
 		result_text = page.locator(selectors['result']).last.inner_text()
 		result_text = self.post_process_response(result_text)
 		logger_config.info("Result fetched successfully")
@@ -151,6 +154,8 @@ class BaseUIChat(ABC):
 			self.fill_prompt(page, user_prompt, system_prompt)
 
 			self.send(page)
+
+			self.wait_for_generation(page)
 
 			return self.get_response(page)
 
