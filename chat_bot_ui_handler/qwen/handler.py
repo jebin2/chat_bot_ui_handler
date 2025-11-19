@@ -38,6 +38,7 @@ class QwenUIChat(BaseUIChat):
 		except: 
 			pass
 
-	def add_wait_res(self, page):
+	def wait_for_generation(self, page):
 		page.wait_for_timeout(1000)
-		page.wait_for_selector(self.get_selectors()['wait_selector'], timeout=10000)
+		page.wait_for_selector(self.get_selectors()['wait_selector'], timeout=20000)
+		page.wait_for_timeout(1000)

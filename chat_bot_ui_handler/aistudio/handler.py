@@ -140,25 +140,15 @@ class AIStudioUIChat(BaseUIChat):
 		# send_button.click()
 		self.save_screenshot(page)
 
-	def add_wait_res(self, page):
-		page.wait_for_timeout(180000)
-
-	def get_response(self, page):
+	def wait_for_generation(self, page):
 		self.save_screenshot(page)
 		selectors = self.get_selectors()
 
 		logger_config.info(f"Waiting for results in 'not_to_have_text text Stop' container...")
-		for _ in range(20):
+		for _ in range(40):
 			try:
 				page.wait_for_selector(selectors['wait_selector'], timeout=10000)
 				break
 			except: pass
-		page.wait_for_timeout(20000) # wait for 20s
 		self.save_screenshot(page)
-
-		result_text = page.locator(selectors['result']).last.inner_text()
-		result_text = self.post_process_response(result_text)
-		logger_config.info("Result fetched successfully")
-		print("Result:", result_text)
 		self.save_screenshot(page)
-		return result_text

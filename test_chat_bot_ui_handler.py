@@ -2,7 +2,7 @@ from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUICh
 from browser_manager.browser_manager import BrowserConfig
 import os
 
-source = GeminiUIChat
+source = MistralUIChat
 config = BrowserConfig()
 
 if source.__name__ == "MetaUIChat" or source.__name__ == "AIStudioUIChat":

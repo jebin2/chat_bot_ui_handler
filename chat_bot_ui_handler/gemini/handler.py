@@ -61,8 +61,4 @@ class GeminiUIChat(BaseUIChat):
 				return el && el.style.visibility === 'hidden';
 			}
 		""", timeout=10000)
-
-		self.add_wait_res(page)
-
-	def add_wait_res(self, page):
 		page.wait_for_timeout(1000)

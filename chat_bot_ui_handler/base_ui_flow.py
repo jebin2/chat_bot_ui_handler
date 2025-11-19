@@ -122,9 +122,6 @@ class BaseUIChat(ABC):
 				page.wait_for_selector(selectors['wait_selector'], timeout=10000)
 				break
 			except: pass
-		self.add_wait_res(page)
-
-	def add_wait_res(self, page):
 		page.wait_for_timeout(10000)
 
 	def get_response_text(self, page):

@@ -64,11 +64,7 @@ class MetaUIChat(BaseUIChat):
 				const element = document.querySelector("div[aria-label='Add media and more']");
 				return element && (element.getAttribute('aria-disabled') === 'false' || !element.hasAttribute('aria-disabled'));
 			}
-		''', timeout=10000)
-
-		self.add_wait_res(page)
-
-	def add_wait_res(self, page):
+		''', timeout=20000)
 		page.wait_for_timeout(1000)
 
 	def get_response_text(self, page):
