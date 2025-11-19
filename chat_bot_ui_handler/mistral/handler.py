@@ -1,4 +1,5 @@
 from chat_bot_ui_handler.base_ui_flow import BaseUIChat
+from custom_logger import logger_config
 
 class MistralUIChat(BaseUIChat):
 	def get_docker_name(self):
@@ -16,9 +17,16 @@ class MistralUIChat(BaseUIChat):
 			'result': 'div[data-message-part-type="answer"]'
 		}
 
+	def wait_for_generation(self, page):
+		selectors = self.get_selectors()
+		logger_config.info(f"Waiting for results in '{selectors['wait_selector']}' chat specific container...")
+		page.wait_for_timeout(5000)
+		page.wait_for_selector('button[aria-label="Voice Mode"]', timeout=10000)
+
+		self.add_wait_res(page)
+
 	def add_wait_res(self, page):
 		page.wait_for_timeout(1000)
-		page.wait_for_selector('button[aria-label="Voice Mode"]', timeout=10000)
 
 	def show_input_file_tag(self, page):
 		page.locator('button[aria-label="Add files"]').click()

@@ -1,4 +1,5 @@
 from chat_bot_ui_handler.base_ui_flow import BaseUIChat
+from custom_logger import logger_config
 
 class GeminiUIChat(BaseUIChat):
 	def get_docker_name(self):
@@ -50,13 +51,18 @@ class GeminiUIChat(BaseUIChat):
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
 
-	def add_wait_res(self, page):
-		page.wait_for_timeout(2000)
-		page.wait_for_function(
-			"""() => {
+	def wait_for_generation(self, page):
+		selectors = self.get_selectors()
+		logger_config.info(f"Waiting for results in '{selectors['wait_selector']}' chat specific container...")
+		page.wait_for_timeout(5000)
+		page.wait_for_function("""
+			() => {
 				const el = document.querySelectorAll('.avatar_spinner_animation')[0];
 				return el && el.style.visibility === 'hidden';
-			}"""
-		)
-		page.wait_for_timeout(2000)
-		# page.wait_for_timeout(180000)
+			}
+		""", timeout=10000)
+
+		self.add_wait_res(page)
+
+	def add_wait_res(self, page):
+		page.wait_for_timeout(1000)
