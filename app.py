@@ -93,7 +93,6 @@ async def get_homepage():
                 <span class="logo-icon">✨</span>
                 <h1 class="logo-text">CAPTION<span class="highlight">CRAFT</span></h1>
             </div>
-            <p class="tagline">AI-Powered Visual Storytelling</p>
         </header>
 
         <div class="main-grid">
@@ -176,11 +175,11 @@ async def get_homepage():
                     <div class="result-content" id="resultContent">
                         <div class="result-text" id="resultText"></div>
                         <div class="result-actions">
-                            <button type="button" class="btn-secondary" id="copyBtn">
+                            <button type="button" class="btn btn-primary" id="copyBtn">
                                 <span class="btn-icon">📋</span>
                                 Copy
                             </button>
-                            <button type="button" class="btn-secondary" id="newCaptionBtn">
+                            <button type="button" class="btn btn-primary" id="newCaptionBtn">
                                 <span class="btn-icon">🔄</span>
                                 New Caption
                             </button>

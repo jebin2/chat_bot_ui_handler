@@ -546,12 +546,13 @@ input[type="file"] {
 }
 
 .result-actions {
+    width: 100%;
     display: flex;
     gap: var(--space-sm);
 }
 
-.result-actions .btn-secondary {
-    flex: 1;
+.result-actions .btn {
+    width: inherit;
 }
 
 /* ERROR STATE */
