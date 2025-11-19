@@ -114,14 +114,26 @@ class BaseUIChat(ABC):
 	def post_process_response(self, result):
 		return result
 
-	def wait_for_generation(self, page):
+	def wait_for_selector(self, page):
 		selectors = self.get_selectors()
 		logger_config.info(f"Waiting for results in '{selectors['wait_selector']}' container...")
-		for _ in range(40):
+		page.wait_for_selector(
+			selectors['wait_selector'],
+			timeout=10000
+		)
+
+	def wait_for_generation(self, page):
+		page.wait_for_timeout(10000)
+		for i in range(40):
 			try:
-				page.wait_for_selector(selectors['wait_selector'], timeout=10000)
+				self.save_screenshot(page)
+				self.wait_for_selector(page)
+				page.wait_for_timeout(2000)
 				break
-			except: pass
+			except:
+				if i + 1 == 40:
+					raise
+				pass
 
 	def get_response_text(self, page):
 		selectors = self.get_selectors()

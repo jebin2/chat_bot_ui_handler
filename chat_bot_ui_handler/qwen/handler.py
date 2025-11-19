@@ -1,4 +1,5 @@
 from chat_bot_ui_handler.base_ui_flow import BaseUIChat
+from custom_logger import logger_config
 
 class QwenUIChat(BaseUIChat):
 	def get_docker_name(self):
@@ -37,8 +38,3 @@ class QwenUIChat(BaseUIChat):
 			self.save_screenshot(page)
 		except: 
 			pass
-
-	def wait_for_generation(self, page):
-		page.wait_for_timeout(1000)
-		page.wait_for_selector(self.get_selectors()['wait_selector'], timeout=30000)
-		page.wait_for_timeout(1000)
