@@ -57,8 +57,13 @@ class MetaUIChat(BaseUIChat):
 		selectors = self.get_selectors()
 		logger_config.info(f"Waiting for results in '{selectors['wait_selector']}' chat specific container...")
 		page.wait_for_timeout(5000)
+
+		# Wait until aria-disabled is removed or set to false
 		page.wait_for_function('''
-			() => !document.querySelector("div[aria-label='Add media and more'] [aria-disabled='true']")
+			() => {
+				const element = document.querySelector("div[aria-label='Add media and more']");
+				return element && (element.getAttribute('aria-disabled') === 'false' || !element.hasAttribute('aria-disabled'));
+			}
 		''', timeout=10000)
 
 		self.add_wait_res(page)
