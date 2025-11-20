@@ -124,7 +124,9 @@ class BaseUIChat(ABC):
 
 	def wait_for_generation(self, page):
 		page.wait_for_timeout(10000)
-		for i in range(40):
+		try: retry = int(os.getenv("WAIT_FOR_GENERATION_RETRY") or 100)
+		except: retry = 100
+		for i in range(retry):
 			try:
 				self.save_screenshot(page)
 				self.wait_for_selector(page)
