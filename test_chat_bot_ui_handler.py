@@ -1,8 +1,8 @@
-from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUIChat, MetaUIChat, GrokUIChat, CopilotUIChat, QwenUIChat, PallyUIChat, AIStudioUIChat, BingUIChat, MistralUIChat, MoonDream
+from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUIChat, MetaUIChat, GrokUIChat, CopilotUIChat, QwenUIChat, PallyUIChat, AIStudioUIChat, BingUIChat, MistralUIChat, MoonDream, BraveAISearch
 from browser_manager.browser_manager import BrowserConfig
 import os
 
-source = MistralUIChat
+source = BraveAISearch
 config = BrowserConfig()
 
 if source.__name__ == "MetaUIChat" or source.__name__ == "AIStudioUIChat":

@@ -19,6 +19,7 @@ from .copilot.handler import CopilotUIChat
 from .bing.handler import BingUIChat
 from .mistral.handler import MistralUIChat
 from .moondream.handler import MoonDream
+from .brave.handler import BraveAISearch
 
 from dotenv import load_dotenv
 import os
@@ -40,4 +41,5 @@ __all__ = [
     "BingUIChat",
     "MistralUIChat",
     "MoonDream",
+    "BraveAISearch"
 ]
