@@ -11,6 +11,6 @@ class BingUIChat(BaseUIChat):
 		return {
 			'input': '#sb_form_q',
 			'send_button': '#sb_form_go',
-			'wait_selector': '.semi-ew-wrapper',
-			'result': '.semi-ew-wrapper'
+			'wait_selector': '.answer_container',
+			'result': '.answer_container'
 		}
