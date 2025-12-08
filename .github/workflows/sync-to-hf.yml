@@ -61,8 +61,8 @@ jobs:
           ---
           title: Image Caption Generator
           emoji: 🖼️
-          colorFrom: orange
-          colorTo: yellow
+          colorFrom: yellow
+          colorTo: red
           sdk: docker
           pinned: false
           license: mit
