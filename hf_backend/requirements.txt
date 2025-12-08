@@ -1,0 +1,7 @@
+Flask==3.0.0
+flask-cors==4.0.0
+werkzeug==3.0.1
+
+# Caption Generator
+git+https://github.com/jebin2/chat_bot_ui_handler.git#egg=chat_bot_ui_handler
+git+https://github.com/jebin2/browser_manager.git#egg=browser_manager
