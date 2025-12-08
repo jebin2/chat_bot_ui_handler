@@ -10,7 +10,7 @@ class GrokUIChat(BaseUIChat):
 
     def get_selectors(self):
         return {
-            'input': 'textarea[aria-label="Ask Grok anything"]',
+            'input': 'div[contenteditable="true"]',
             'send_button': 'button[type="submit"]',
             'wait_selector': 'button[aria-label="Enter voice mode"]',
             'result': '#last-reply-container .message-bubble'

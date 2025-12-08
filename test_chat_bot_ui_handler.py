@@ -2,7 +2,7 @@ from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUICh
 from browser_manager.browser_manager import BrowserConfig
 import os
 
-source = BingUIChat
+source = PerplexityUIChat
 config = BrowserConfig()
 # config.use_neko = False
 # config.browser_executable = "/usr/bin/brave"

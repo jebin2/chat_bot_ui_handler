@@ -26,7 +26,7 @@ class PerplexityUIChat(BaseUIChat):
         page.click(upload_button_selector)
 
         logger_config.info(f"Uploading file: {file_path}")
-        file_input = page.locator('input[type="file"]').first
+        file_input = page.locator('input[type="file"]').last
         file_input.set_input_files(file_path)
 
         logger_config.info("Waiting for upload preview or cancel button (max 20s)...")
