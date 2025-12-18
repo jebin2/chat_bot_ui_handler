@@ -17,7 +17,6 @@ class GeminiUIChat(BaseUIChat):
 		}
 
 	def set_model(self, page):
-		"""Set the Gemini model (2.5 Pro or fallback to 2.5 Flash)."""
 		# Click the Bard mode menu button
 		page.keyboard.press("Escape")
 		page.wait_for_timeout(500)
