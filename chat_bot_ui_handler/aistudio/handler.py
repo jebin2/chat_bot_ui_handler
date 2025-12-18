@@ -16,7 +16,7 @@ class AIStudioUIChat(BaseUIChat):
 
 	def get_selectors(self):
 		return {
-			'input': 'div.text-input-wrapper textarea',
+			'input': 'textarea',
 			'send_button': 'button[type="submit"]',
 			'wait_selector': 'button[type="submit"]',
 			'result': 'ms-chat-turn div[data-turn-role="Model"]'
@@ -66,11 +66,11 @@ class AIStudioUIChat(BaseUIChat):
 		if file_path:
 			logger_config.info(f"Uploading file: {file_path}")
 
-			page.locator('button[aria-label="Insert assets such as images, videos, files, or audio"]').click()
+			page.locator('ms-add-media-button').click()
 			page.wait_for_timeout(2000)
 			self.save_screenshot(page)
 
-			page.locator('button[aria-label="Upload File"]').click()
+			page.locator('button:has-text("Upload")').click();
 			page.wait_for_timeout(3000)
 			self.save_screenshot(page)
 
