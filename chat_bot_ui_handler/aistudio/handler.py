@@ -70,7 +70,7 @@ class AIStudioUIChat(BaseUIChat):
 			page.wait_for_timeout(2000)
 			self.save_screenshot(page)
 
-			page.locator('button:has-text("Upload")').click();
+			page.locator('button:has-text("Upload")').click()
 			page.wait_for_timeout(3000)
 			self.save_screenshot(page)
 
