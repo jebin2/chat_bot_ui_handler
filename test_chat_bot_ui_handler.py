@@ -13,7 +13,7 @@ if source.__name__ == "MetaUIChat" or source.__name__ == "AIStudioUIChat":
 	# Set up additional docker flags
 	additional_flags = []
 	additional_flags.append(f'-v /home/jebin/git/chat_bot_ui_handler:/home/neko/Downloads')
-	additional_flags.append(f'-v /home/jebin/git/browser_manager/policies.json:/etc/opt/chrome/policies/managed/policies.json')
+	additional_flags.append(f'-v /home/jebin/git/neko-apps/chrome-remote-debug/policies.json:/etc/opt/chrome/policies/managed/policies.json')
 	config.additionl_docker_flag = ' '.join(additional_flags)
 
 baseUIChat = source(config)
