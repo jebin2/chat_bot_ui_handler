@@ -32,6 +32,17 @@ class BaseUIChat(ABC):
 		"""Return the URL to navigate to"""
 		pass
 
+	def need_google_login(self):
+		return False
+
+	def google_login(self, page):
+		if self.need_google_login():
+			logger_config.info("Starting Google OAuth login injection...")
+			from chat_bot_ui_handler.google_login_injector import GoogleLoginInjector
+			login_injector = GoogleLoginInjector()
+			login_injector.login(page)
+			page.wait_for_timeout(5000)
+
 	@abstractmethod
 	def get_selectors(self):
 		"""Return a dict with required selectors"""
@@ -158,6 +169,8 @@ class BaseUIChat(ABC):
 
 	def process(self, page, user_prompt, system_prompt, file_path):
 		try:
+			self.google_login(page)
+
 			self.load_url(page)
 
 			self.login(page)

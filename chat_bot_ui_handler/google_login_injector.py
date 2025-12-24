@@ -8,11 +8,8 @@ class GoogleLoginInjector:
 
     def login(self, page):
         page.wait_for_timeout(2000)
-        reserver_url = None
-        if not page.url.startswith("https://accounts.google.com"):
-            reserver_url = page.url  # Trigger URL load
-            page.goto("https://accounts.google.com", wait_until='domcontentloaded')
-            page.wait_for_timeout(2000)
+        page.goto("https://accounts.google.com", wait_until='domcontentloaded')
+        page.wait_for_timeout(2000)
 
         if page.url.startswith("https://accounts.google.com"):
             # Wait for email input and enter email
@@ -49,7 +46,3 @@ class GoogleLoginInjector:
                         logger_config.info("Wait after found 2-Step Verification", seconds=5)
                         break
                 except: pass
-
-        if reserver_url:
-            page.goto(reserver_url, wait_until='domcontentloaded')
-            page.wait_for_timeout(2000)

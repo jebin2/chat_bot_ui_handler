@@ -11,6 +11,9 @@ class AIStudioUIChat(BaseUIChat):
 	def get_docker_name(self):
 		return f"{self.config.docker_name}_aistudio_ui_handler"
 
+	def need_google_login(self):
+		return True
+
 	def get_url(self):
 		return "https://aistudio.google.com/prompts/new_chat?model=gemini-3-pro-preview"
 
@@ -59,12 +62,6 @@ class AIStudioUIChat(BaseUIChat):
 
 	def login(self, page):
 		"""Handle initial setup after page load"""
-		logger_config.info("Starting Google OAuth login injection...")
-		from chat_bot_ui_handler.google_login_injector import GoogleLoginInjector
-		login_injector = GoogleLoginInjector()
-		login_injector.login(page)
-		# Dismiss any popups
-		page.wait_for_timeout(5000)
 		self._dismiss_popup(page)
 
 	def configure_system_instructions(self, page, system_prompt):
