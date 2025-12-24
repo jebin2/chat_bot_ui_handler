@@ -162,6 +162,7 @@ class BaseUIChat(ABC):
 
 			self.login(page)
 
+			# page.wait_for_timeout(200000)
 			self.upload_file(page, file_path)
 
 			self.fill_prompt(page, user_prompt, system_prompt)

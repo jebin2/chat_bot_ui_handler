@@ -12,8 +12,8 @@ class PerplexityUIChat(BaseUIChat):
     def get_selectors(self):
         return {
             'input': '#ask-input',
-            'send_button': 'button[data-testid="submit-button"]',
-            'wait_selector': 'button[data-testid="submit-button"]',
+            'send_button': 'button[aria-label="Submit"]',
+            'wait_selector': 'button[aria-label="Submit"][disabled]',
             'result': 'div[id*="markdown-content"]'
         }
 

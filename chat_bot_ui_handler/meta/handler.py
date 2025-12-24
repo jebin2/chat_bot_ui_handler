@@ -26,7 +26,7 @@ class MetaUIChat(BaseUIChat):
 		page.locator('div[aria-label="Add media and more"]').first.click()
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
-		page.locator('div[role="menuitem"]').first.click()
+		page.locator('div[role="menuitem"]:has-text("Add")').first.click()
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
 		page.locator('div[aria-label="Add media and more"]').first.click()

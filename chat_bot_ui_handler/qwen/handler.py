@@ -11,9 +11,9 @@ class QwenUIChat(BaseUIChat):
 	def get_selectors(self):
 		return {
 			'input': 'textarea[id="chat-input"]',
-			'send_button': '#send-message-button',
-			'wait_selector': '#send-message-button',
-			'result': '#response-message-body'
+			'send_button': '.send-button',
+			'wait_selector': '.send-button[disabled]',
+			'result': '.response-message-content'
 		}
 
 	def login(self, page):
