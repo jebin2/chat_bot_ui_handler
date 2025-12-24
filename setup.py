@@ -8,7 +8,8 @@ setup(
 		"python-dotenv",
 		"json-repair",
 		"custom_logger @ git+https://github.com/jebin2/custom_logger.git",
-		"browser_manager @ git+https://github.com/jebin2/browser_manager.git"
+		"browser_manager @ git+https://github.com/jebin2/browser_manager.git",
+		"jebin_lib @ git+https://github.com/jebin2/lib.git"
 	],
     author="Jebin Einstein",
     author_email="jebineinstein@gmail.com",

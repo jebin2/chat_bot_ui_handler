@@ -22,11 +22,8 @@ from .moondream.handler import MoonDream
 from .brave.handler import BraveAISearch
 from .duckduckgo.handler import DuckDuckGoAISearch
 
-from dotenv import load_dotenv
-import os
-if os.path.exists(".env"):
-    print("Loaded load_dotenv")
-    load_dotenv()
+from jebin_lib import load_env
+load_env()
 
 __all__ = [
     "BaseUIChat",

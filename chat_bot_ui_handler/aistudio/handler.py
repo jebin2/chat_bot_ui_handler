@@ -34,6 +34,17 @@ class AIStudioUIChat(BaseUIChat):
 		except:
 			pass
 
+		try:
+			self.save_screenshot(page)
+			page.locator('button:has-text("Got it")').click()
+			page.wait_for_timeout(2000)
+			self.save_screenshot(page)
+			page.keyboard.press("Escape")
+			page.wait_for_timeout(2000)
+			self.save_screenshot(page)
+		except:
+			pass
+
 	def _acknowledge_copyright(self, page) -> None:
 		"""Acknowledge copyright notice if it appears"""
 		try:
@@ -48,6 +59,12 @@ class AIStudioUIChat(BaseUIChat):
 
 	def login(self, page):
 		"""Handle initial setup after page load"""
+		logger_config.info("Starting Google OAuth login injection...")
+		from chat_bot_ui_handler.google_login_injector import GoogleLoginInjector
+		login_injector = GoogleLoginInjector()
+		login_injector.login(page)
+		# Dismiss any popups
+		page.wait_for_timeout(5000)
 		self._dismiss_popup(page)
 
 	def configure_system_instructions(self, page, system_prompt):
