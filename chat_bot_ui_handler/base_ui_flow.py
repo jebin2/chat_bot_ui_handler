@@ -211,6 +211,16 @@ class BaseUIChat(ABC):
 
 		return None
 
+	def chat_fresh(self, user_prompt, system_prompt=None, file_path=None):
+		try:
+			page = self.get_browser_manager().get_fresh_page()
+			return self.process(page, user_prompt, system_prompt, file_path)
+		except Exception as e:
+			logger_config.error(f"Error in chat_fresh: {e}")
+			pass
+
+		return None
+
 	def cleanup(self):
 		if self.browser_manager:
 			try:
