@@ -34,8 +34,13 @@ class GeminiUIChat(BaseUIChat):
 		enabled_buttons = dropdown_panel.locator('button[aria-disabled="false"]')
 
 		# Click the last one
-		last_button = enabled_buttons.nth(enabled_buttons.count() - 1)
-		last_button.click(force=True)
+		# last_button = enabled_buttons.nth(enabled_buttons.count() - 1)
+		# last_button.click(force=True)
+
+		# Click the first one
+		first_button = enabled_buttons.nth(0)
+		first_button.click(force=True)
+
 		self.save_screenshot(page)
 
 	def login(self, page):
