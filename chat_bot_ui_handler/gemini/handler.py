@@ -23,9 +23,9 @@ class GeminiUIChat(BaseUIChat):
 		page.keyboard.press("Escape")
 		page.wait_for_timeout(1000)
 		try:
-			page.wait_for_selector('div[data-test-id="bard-mode-menu-button"] button', state="visible")
+			page.wait_for_selector('button[data-test-id="bard-mode-menu-button"]', state="visible")
 		except: pass
-		self.force_click(page, 'div[data-test-id="bard-mode-menu-button"] button')
+		self.force_click(page, 'button[data-test-id="bard-mode-menu-button"]')
 		dropdown_panel = page.locator('.menu-inner-container')
 		self.save_screenshot(page)
 		page.wait_for_timeout(2000)
@@ -46,7 +46,7 @@ class GeminiUIChat(BaseUIChat):
 		page.locator('button[aria-label="Open upload file menu"]').click(force=True)
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
-		page.locator('[data-test-id="local-images-files-uploader-button"]').click(force=True)
+		page.locator('button[data-test-id="local-images-files-uploader-button"]').click(force=True)
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
 
