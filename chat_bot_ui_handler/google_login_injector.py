@@ -26,32 +26,60 @@ class GoogleLoginInjector:
         page.wait_for_timeout(2000)
 
         logger_config.info(f"Current URL after goto: {page.url}")
-        if page.url.startswith("https://accounts.google.com"):
-            # Wait for email input and enter email
+        if "accountchooser" in page.url or page.url.startswith("https://accounts.google.com"):
+            # Handle potential Account Chooser
+            try:
+                page.wait_for_timeout(2000) # Give it time to load dynamic content
+                
+                use_another_account = page.get_by_text("Use another account", exact=True)
+                saved_account = page.locator(f'[data-identifier="{self.email}"]')
+                saved_account_alt = page.locator(f'[data-email="{self.email}"]')
+                
+                if saved_account.is_visible():
+                    logger_config.info("Account chooser detected. Clicking existing account...")
+                    saved_account.first.click()
+                    page.wait_for_timeout(2000)
+                elif saved_account_alt.is_visible():
+                    logger_config.info("Account chooser detected. Clicking existing account...")
+                    saved_account_alt.first.click()
+                    page.wait_for_timeout(2000)
+                elif use_another_account.is_visible():
+                    logger_config.info("Account chooser detected. Clicking 'Use another account'...")
+                    use_another_account.first.click()
+                    page.wait_for_timeout(2000)
+            except Exception as e:
+                logger_config.info(f"Error handling account chooser: {e}")
+
+            # Wait for email input and enter email (if NOT already prepopulated/skipped)
             logger_config.info("Looking for email input...")
             email_selector = '#identifierId'
-            page.wait_for_selector(email_selector)
-            page.wait_for_timeout(2000)
-            page.fill(email_selector, self.email)
-            
-            # Click next button
-            next_button = '#identifierNext'
-            page.wait_for_selector(next_button)
-            page.wait_for_timeout(2000)
-            page.click(next_button)
+            if page.locator(email_selector).is_visible():
+                page.wait_for_selector(email_selector)
+                page.wait_for_timeout(2000)
+                page.fill(email_selector, self.email)
+                
+                # Click next button
+                next_button = '#identifierNext'
+                page.wait_for_selector(next_button)
+                page.wait_for_timeout(2000)
+                page.click(next_button)
+            else:
+                logger_config.info("Email input not found (likely already on password page or prepopulated)")
             
             # Wait for password input and enter password
             logger_config.info("Looking for password input...")
             password_selector = 'input[type="password"]'
-            page.wait_for_selector(password_selector)
-            page.wait_for_timeout(2000)
-            page.fill(password_selector, self.password)
-            
-            # Click next/sign in button
-            signin_button = '#passwordNext'
-            page.wait_for_selector(signin_button)
-            page.wait_for_timeout(2000)
-            page.click(signin_button)
+            if page.locator(password_selector).is_visible():
+                page.wait_for_timeout(2000)
+                page.fill(password_selector, self.password)
+
+                # Click next/sign in button
+                signin_button = '#passwordNext'
+                page.wait_for_selector(signin_button)
+                page.wait_for_timeout(2000)
+                page.click(signin_button)
+            else:
+                logger_config.info("Password input not found (likely already authenticated via existing account)")
 
             page.wait_for_timeout(5000)
             _upload_screenshot_to_hf(page)
