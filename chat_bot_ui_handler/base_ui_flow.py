@@ -160,7 +160,6 @@ class BaseUIChat(ABC):
 			try:
 				logger_config.info(f"Waiting for response... iteration {i}")
 				page.wait_for_timeout(5000)
-				break
 			except:
 				pass
 
