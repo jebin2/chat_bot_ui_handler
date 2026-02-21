@@ -127,6 +127,7 @@ class BaseUIChat(ABC):
 		send_button.click()
 		logger_config.info("'Send' button clicked")
 		page.wait_for_timeout(2000)
+		page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
 		self.save_screenshot(page)
 
 	def post_process_response(self, result):

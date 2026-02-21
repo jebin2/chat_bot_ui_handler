@@ -151,5 +151,6 @@ class AIStudioUIChat(BaseUIChat):
 		send_button.click(force=True)
 		logger_config.info("'Send' button clicked")
 		page.wait_for_timeout(2000)
+		page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
 		# send_button.click()
 		self.save_screenshot(page)
