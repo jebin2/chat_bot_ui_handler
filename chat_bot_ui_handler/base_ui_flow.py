@@ -154,7 +154,15 @@ class BaseUIChat(ABC):
 				pass
 
 	def post_response_wait(self, page):
-		page.wait_for_timeout(500000) # 500 seconds
+		try: retry = int(os.getenv("POST_RESPONSE_WAIT_RETRY") or 100)
+		except: retry = 100
+		for i in range(retry):
+			try:
+				logger_config.info(f"Waiting for response... iteration {i}")
+				page.wait_for_timeout(5000)
+				break
+			except:
+				pass
 
 	def get_response_text(self, page):
 		self.post_response_wait(page)
