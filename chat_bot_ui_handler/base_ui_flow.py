@@ -132,9 +132,9 @@ class BaseUIChat(ABC):
 	def post_process_response(self, result):
 		return result
 
-	def wait_for_selector(self, page):
+	def wait_for_selector(self, page, i=0):
 		selectors = self.get_selectors()
-		logger_config.info(f"Waiting for results in '{selectors['wait_selector']}' container...")
+		logger_config.info(f"Waiting for results in '{selectors['wait_selector']}' container... iteration {i}")
 		page.wait_for_selector(
 			selectors['wait_selector'],
 			timeout=10000
@@ -147,7 +147,7 @@ class BaseUIChat(ABC):
 		for i in range(retry):
 			try:
 				self.save_screenshot(page)
-				self.wait_for_selector(page)
+				self.wait_for_selector(page, i)
 				page.wait_for_timeout(2000)
 				break
 			except:
