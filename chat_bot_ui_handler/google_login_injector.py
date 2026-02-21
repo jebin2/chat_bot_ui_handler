@@ -20,10 +20,12 @@ class GoogleLoginInjector:
         self.password = os.getenv('GOOGLE_PASSWORD') or os.getenv('OAUTH_PASSWORD')
 
     def login(self, page):
+        logger_config.info(f"Current URL: {page.url}")
         page.wait_for_timeout(2000)
         page.goto("https://accounts.google.com", wait_until='domcontentloaded')
         page.wait_for_timeout(2000)
 
+        logger_config.info(f"Current URL after goto: {page.url}")
         if page.url.startswith("https://accounts.google.com"):
             # Wait for email input and enter email
             logger_config.info("Looking for email input...")
