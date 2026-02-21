@@ -61,6 +61,13 @@ class BaseUIChat(ABC):
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
 
+	def cloudflare_bypass(self, page):
+		challenge_frame = page.frame_locator(
+			"iframe[title*='Cloudflare'], iframe[title*='challenge'], iframe[title*='security']"
+		)
+		checkbox = challenge_frame.locator("input[type='checkbox']")
+		checkbox.click()
+
 	def force_click(self, page, selector: str):
 		el = page.locator(selector)
 		if el.count() == 0:
@@ -103,7 +110,7 @@ class BaseUIChat(ABC):
 	def fill_prompt(self, page, user_prompt, system_prompt=None):
 		full_prompt = user_prompt
 		if system_prompt:
-			full_prompt = f"SYSTEM INSTRUCTIONS:: {system_prompt}\n\nUSER PROMPT{user_prompt}"
+			full_prompt = f"SYSTEM INSTRUCTIONS:: {system_prompt}\n\nUSER PROMPT:: {user_prompt}"
 
 		selectors = self.get_selectors()
 		logger_config.info("Filling user prompt into input...")
@@ -156,7 +163,7 @@ class BaseUIChat(ABC):
 		result_text = self.get_response_text(page)
 		result_text = self.post_process_response(result_text)
 		logger_config.info("Result fetched successfully")
-		print("Result:", result_text)
+		print(f"Result from {self.get_docker_name()}: {result_text}")
 		self.save_screenshot(page)
 		return result_text
 

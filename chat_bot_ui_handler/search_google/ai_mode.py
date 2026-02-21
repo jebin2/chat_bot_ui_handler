@@ -17,6 +17,11 @@ class GoogleAISearchChat(BaseUIChat):
 			'result': 'div[data-container-id="main-col"]'
 		}
 
+	def show_input_file_tag(self, page):
+		# Click the "Upload image" button to reveal the file input
+		page.locator('button[aria-label="More input options"]').first.click()
+		page.wait_for_timeout(1000)  # Wait for the file input to become visible
+
 	def login(self, page):
 		"""Enable AI Mode after page load"""
 		logger_config.info("Locating 'AI Mode' button...")

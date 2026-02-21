@@ -1,7 +1,6 @@
 from functools import partial
 from chat_bot_ui_handler.base_ui_flow import BaseUIChat
 from custom_logger import logger_config
-import os
 
 class MetaUIChat(BaseUIChat):
 	def __init__(self, config=None):

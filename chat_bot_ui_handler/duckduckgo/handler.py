@@ -5,7 +5,7 @@ class DuckDuckGoAISearch(BaseUIChat):
 		return f"{self.config.docker_name}_duck_duck_go_ai_search"
 
 	def get_url(self):
-		return "https://duckduckgo.com/?q=DuckDuckGo+AI+Chat&ia=chat&duckai=1"
+		return "https://duck.ai/"
 
 	def login(self, page):
 		page.wait_for_function("""
