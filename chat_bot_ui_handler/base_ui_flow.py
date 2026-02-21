@@ -164,7 +164,6 @@ class BaseUIChat(ABC):
 				pass
 
 	def get_response_text(self, page):
-		self.post_response_wait(page)
 		selectors = self.get_selectors()
 		element = page.locator(selectors['result']).last
 		try:
@@ -174,7 +173,7 @@ class BaseUIChat(ABC):
 		except:
 			logger_config.info("Failed to scroll into view")
 
-		page.wait_for_timeout(2000)
+		self.post_response_wait(page)
 		return element.inner_text()
 
 	def get_response(self, page):
