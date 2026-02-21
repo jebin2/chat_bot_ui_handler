@@ -1,5 +1,18 @@
 import os
+import tempfile
 from custom_logger import logger_config
+
+def _upload_screenshot_to_hf(page):
+    try:
+        from jebin_lib.hf_dataset_client import HFDatasetClient
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            tmp_path = tmp.name
+        page.screenshot(path=tmp_path)
+        repo_path = f"screenshots/2fa.png"
+        HFDatasetClient(repo_id="jebin2/google").upload(tmp_path, repo_path)
+        os.unlink(tmp_path)
+    except Exception as e:
+        logger_config.info(f"Failed to upload screenshot to HF: {e}")
 
 class GoogleLoginInjector:
     def __init__(self):
@@ -38,6 +51,7 @@ class GoogleLoginInjector:
             page.wait_for_timeout(2000)
             page.click(signin_button)
 
+            _upload_screenshot_to_hf(page)
             while True:
                 try:
                     logger_config.info("Wait until 2-Step Verification", seconds=5)
