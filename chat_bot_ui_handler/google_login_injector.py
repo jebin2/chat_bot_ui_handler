@@ -51,6 +51,7 @@ class GoogleLoginInjector:
             page.wait_for_timeout(2000)
             page.click(signin_button)
 
+            page.wait_for_timeout(5000)
             _upload_screenshot_to_hf(page)
             while True:
                 try:
