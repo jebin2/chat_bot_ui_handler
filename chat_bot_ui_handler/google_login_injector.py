@@ -20,6 +20,16 @@ class GoogleLoginInjector:
         self.password = os.getenv('GOOGLE_PASSWORD') or os.getenv('OAUTH_PASSWORD')
 
     def login(self, page):
+        # Register a safe dialog handler to prevent crashes when JS dialogs
+        # appear and vanish during navigation (race condition with auto-dismiss)
+        def _safe_dialog_handler(dialog):
+            try:
+                dialog.accept()
+            except Exception:
+                pass  # Dialog already gone — safe to ignore
+
+        page.on("dialog", _safe_dialog_handler)
+
         logger_config.info(f"[GoogleLogin] Step 1: Starting login process. Current URL: {page.url}")
         page.wait_for_timeout(2000)
         logger_config.info("[GoogleLogin] Step 2: Navigating to https://accounts.google.com")
