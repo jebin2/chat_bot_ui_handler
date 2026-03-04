@@ -11,11 +11,11 @@ config = BrowserConfig()
 # BraveAISearch - works in headless browser
 
 if source.__name__ == "MetaUIChat" or source.__name__ == "AIStudioUIChat" or source.__name__ == "QwenUIChat":
-	# Set up additional docker flags
-	additional_flags = []
-	additional_flags.append(f'-v /home/jebin/git/chat_bot_ui_handler:{config.neko_attach_folder}')
-	additional_flags.append(f'-v /home/jebin/git/chat_bot_ui_handler/policies.json:/etc/opt/chrome/policies/managed/policies.json')
-	config.additionl_docker_flag = ' '.join(additional_flags)
+    # Set up additional docker flags
+    additional_flags = []
+    additional_flags.append(f'-v /home/jebin/git/chat_bot_ui_handler:{config.neko_attach_folder}')
+    additional_flags.append(config.policy_volume_mount("/home/jebin/git/chat_bot_ui_handler/policies.json"))
+    config.additionl_docker_flag = ' '.join(additional_flags)
 
 baseUIChat = source(config)
 

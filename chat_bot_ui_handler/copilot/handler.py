@@ -1,4 +1,5 @@
 from chat_bot_ui_handler.base_ui_flow import BaseUIChat
+from custom_logger import logger_config
 
 class CopilotUIChat(BaseUIChat):
     def get_docker_name(self):
@@ -20,7 +21,6 @@ class CopilotUIChat(BaseUIChat):
             # Wait for login button to appear (5 seconds timeout)
             try:
                 login = page.locator('button[title="Sign in"]').first
-                print(login)
                 login.wait_for(timeout=5000)  # Wait up to 5 seconds
                 login.click()
                 page.wait_for_timeout(2000)
@@ -45,7 +45,7 @@ class CopilotUIChat(BaseUIChat):
                 self.save_screenshot(page)
                 
             except Exception as e:
-                print(str(e))
+                logger_config.error(f"Error during login: {e}")
                 pass
 
             page.wait_for_timeout(2000)

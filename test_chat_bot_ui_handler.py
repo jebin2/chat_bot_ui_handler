@@ -15,7 +15,7 @@ if source.__name__ == "MetaUIChat" or source.__name__ == "AIStudioUIChat" or sou
 	policy_path = os.path.join(os.getcwd(), 'policies.json')
 	additional_flags = []
 	additional_flags.append(f'-v {os.getcwd()}:{config.neko_attach_folder}')
-	additional_flags.append(f'-v {policy_path}:/etc/opt/chrome/policies/managed/policies.json')
+	additional_flags.append(config.policy_volume_mount(policy_path))
 	config.additionl_docker_flag = ' '.join(additional_flags)
 
 baseUIChat = source(config)

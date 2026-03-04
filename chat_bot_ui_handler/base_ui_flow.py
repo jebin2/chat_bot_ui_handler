@@ -74,7 +74,6 @@ class BaseUIChat(ABC):
 			raise Exception(f"Element not found: {selector}")
 
 		pointer_events = el.evaluate("el => getComputedStyle(el).pointerEvents")
-		print(pointer_events)
 		if pointer_events == "none":
 			el.evaluate("el => el.style.pointerEvents = 'auto'")
 
@@ -174,7 +173,7 @@ class BaseUIChat(ABC):
 		result_text = self.get_response_text(page)
 		result_text = self.post_process_response(result_text)
 		logger_config.info("Result fetched successfully")
-		print(f"Result from {self.get_docker_name()}: {result_text}")
+		logger_config.info(f"Result from {self.get_docker_name()}: {result_text}")
 		self.save_screenshot(page)
 		return result_text
 
