@@ -1,5 +1,6 @@
 from chat_bot_ui_handler.base_ui_flow import BaseUIChat
 from custom_logger import logger_config
+import os
 
 class GeminiUIChat(BaseUIChat):
 	def get_docker_name(self):
@@ -62,3 +63,13 @@ class GeminiUIChat(BaseUIChat):
 				return el && el.style.visibility === 'hidden';
 			}
 		""", timeout=10000)
+
+	def post_response_wait(self, page):
+		try: retry = int(os.getenv("POST_RESPONSE_WAIT_RETRY") or 50)
+		except: retry = 50
+		for i in range(retry):
+			try:
+				logger_config.info(f"Waiting for response... iteration {i}")
+				page.wait_for_timeout(5000)
+			except:
+				pass
