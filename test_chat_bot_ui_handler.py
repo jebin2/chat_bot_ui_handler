@@ -2,7 +2,7 @@ from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUICh
 from browser_manager.browser_manager import BrowserConfig
 import os
 
-source = AIStudioUIChat
+source = BingUIChat
 config = BrowserConfig()
 # search works without login : GoogleAISearchChat, QwenUIChat, BingUIChat, BraveAISearch, DuckDuckGoAISearch
 # config.use_neko = False

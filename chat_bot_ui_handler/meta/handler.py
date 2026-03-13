@@ -34,16 +34,16 @@ class MetaUIChat(BaseUIChat):
 		if file_path:
 			self.show_input_file_tag(page)
 
-			logger_config.info(f"Uploading file: {file_path}")
-			
+			self.logger.info(f"Uploading file: {file_path}")
+
 			# Use xdotool for file selection
 			choose_file_via_xdotool = partial(
-				self.get_browser_manager().launcher.choose_file_via_xdotool, 
+				self.get_browser_manager().launcher.choose_file_via_xdotool,
 				config=self.config
 			)
 			choose_file_via_xdotool(file_path=file_path)
 
-			logger_config.info("File uploaded successfully")
+			self.logger.info("File uploaded successfully")
 			page.wait_for_timeout(5000)
 			self.save_screenshot(page)
 

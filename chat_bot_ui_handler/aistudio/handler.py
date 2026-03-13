@@ -58,7 +58,7 @@ class AIStudioUIChat(BaseUIChat):
 			page.wait_for_timeout(2000)
 			self.save_screenshot(page)
 		except Exception as e:
-			logger_config.debug(f"No copyright dialog to acknowledge: {e}")
+			self.logger.debug(f"No copyright dialog to acknowledge: {e}")
 
 	def login(self, page):
 		"""Handle initial setup after page load"""
@@ -78,7 +78,7 @@ class AIStudioUIChat(BaseUIChat):
 
 	def upload_file(self, page, file_path):
 		if file_path:
-			logger_config.info(f"Uploading file: {file_path}")
+			self.logger.info(f"Uploading file: {file_path}")
 
 			page.locator('ms-add-media-button').click()
 			page.wait_for_timeout(2000)
@@ -97,7 +97,7 @@ class AIStudioUIChat(BaseUIChat):
 			self.save_screenshot(page)
 			self._acknowledge_copyright(page)
 			self.save_screenshot(page)
-			logger_config.info("File uploaded successfully")
+			self.logger.info("File uploaded successfully")
 			page.wait_for_timeout(5000)
 			self.save_screenshot(page)
 			# Wait for upload completion (look for remove buttons)
@@ -129,10 +129,10 @@ class AIStudioUIChat(BaseUIChat):
 			self.configure_system_instructions(page, system_prompt)
 
 		selectors = self.get_selectors()
-		logger_config.info("Filling user prompt into input...")
+		self.logger.info("Filling user prompt into input...")
 		input_field = page.locator(selectors['input']).first
 		input_field.fill(user_prompt)
-		logger_config.info("Prompt filled successfully")
+		self.logger.info("Prompt filled successfully")
 		page.wait_for_timeout(2000)
 		self.save_screenshot(page)
 
@@ -145,11 +145,11 @@ class AIStudioUIChat(BaseUIChat):
 
 	def send(self, page):
 		selectors = self.get_selectors()
-		logger_config.info("Clicking 'Send' button...")
+		self.logger.info("Clicking 'Send' button...")
 		send_button = page.locator(selectors['send_button']).first
 		expect(send_button).to_be_enabled(timeout=10 * 60 * 1000)
 		send_button.click(force=True)
-		logger_config.info("'Send' button clicked")
+		self.logger.info("'Send' button clicked")
 		page.wait_for_timeout(2000)
 		page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
 		# send_button.click()
@@ -160,7 +160,7 @@ class AIStudioUIChat(BaseUIChat):
 		except: retry = 50
 		for i in range(retry):
 			try:
-				logger_config.info(f"Waiting for response... iteration {i}")
+				self.logger.info(f"Waiting for response... iteration {i}")
 				page.wait_for_timeout(5000)
 			except:
 				pass

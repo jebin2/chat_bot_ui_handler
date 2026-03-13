@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chat-bot-ui-handler"
+version = "0.1.0"
+description = "A package for automating various chatbot UI interactions"
+readme = "README.md"
+authors = [{ name = "Jebin Einstein", email = "jebineinstein@gmail.com" }]
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "python-dotenv",
+    "json-repair",
+    "custom_logger @ git+https://github.com/jebin2/custom_logger.git",
+    "browser_manager @ git+https://github.com/jebin2/browser_manager.git",
+    "jebin_lib @ git+https://github.com/jebin2/lib.git",
+]
+
+[project.urls]
+Homepage = "https://github.com/jebin2/chat_bot_ui_handler"
+
+[tool.setuptools.packages.find]
+exclude = ["test*"]

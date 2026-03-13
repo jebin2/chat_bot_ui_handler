@@ -24,10 +24,10 @@ class GoogleAISearchChat(BaseUIChat):
 
 	def login(self, page):
 		"""Enable AI Mode after page load"""
-		logger_config.info("Locating 'AI Mode' button...")
+		self.logger.info("Locating 'AI Mode' button...")
 		ai_button = page.locator("button:has-text('AI Mode')").first
 		ai_button.click()
-		logger_config.info("'AI Mode' button clicked")
+		self.logger.info("'AI Mode' button clicked")
 		page.wait_for_timeout(2000)
 		self.save_screenshot(page)
 

@@ -45,7 +45,7 @@ class CopilotUIChat(BaseUIChat):
                 self.save_screenshot(page)
                 
             except Exception as e:
-                logger_config.error(f"Error during login: {e}")
+                self.logger.error(f"Error during login: {e}")
                 pass
 
             page.wait_for_timeout(2000)

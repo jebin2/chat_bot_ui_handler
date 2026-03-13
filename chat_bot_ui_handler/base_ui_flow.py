@@ -6,6 +6,20 @@ import traceback
 from abc import ABC, abstractmethod
 import json
 
+class _PrefixedLogger:
+	def __init__(self, prefix):
+		self._prefix = prefix
+
+	def info(self, msg):
+		logger_config.info(f"[{self._prefix}] {msg}")
+
+	def error(self, msg):
+		logger_config.error(f"[{self._prefix}] {msg}")
+
+	def debug(self, msg):
+		logger_config.debug(f"[{self._prefix}] {msg}")
+
+
 class BaseUIChat(ABC):
 	def __init__(self, config=None):
 		self.config = config or BrowserConfig()
@@ -15,6 +29,7 @@ class BaseUIChat(ABC):
 			os.makedirs(self.config.user_data_dir, exist_ok=True)
 
 		self.browser_manager = None
+		self.logger = _PrefixedLogger(self.__class__.__name__)
 
 	def get_browser_manager(self):
 		if not self.browser_manager:
@@ -37,7 +52,7 @@ class BaseUIChat(ABC):
 
 	def google_login(self, page):
 		if self.need_google_login():
-			logger_config.info("Starting Google OAuth login injection...")
+			self.logger.info("Starting Google OAuth login injection...")
 			from chat_bot_ui_handler.google_login_injector import GoogleLoginInjector
 			login_injector = GoogleLoginInjector()
 			login_injector.login(page)
@@ -51,9 +66,9 @@ class BaseUIChat(ABC):
 	def load_url(self, page):
 		# Navigate to URL
 		url = self.get_url()
-		logger_config.info(f"Loading URL: {url}")
+		self.logger.info(f"Loading URL: {url}")
 		page.goto(url, wait_until='domcontentloaded')
-		logger_config.info("Page loaded successfully, waiting 5s for content...")
+		self.logger.info("Page loaded successfully, waiting 5s for content...")
 		page.wait_for_timeout(5000)
 		page.keyboard.press("Escape")
 		page.wait_for_timeout(1000)
@@ -92,7 +107,7 @@ class BaseUIChat(ABC):
 			self.show_input_file_tag(page)
 
 			selectors = self.get_selectors()
-			logger_config.info(f"Uploading file: {file_path}")
+			self.logger.info(f"Uploading file: {file_path}")
 
 			file_input = page.locator(selectors.get("input_file", 'input[type="file"]')).first
 			file_input.wait_for(state="attached", timeout=5000)
@@ -102,7 +117,7 @@ class BaseUIChat(ABC):
 			if input_file_wait_selector:
 				page.wait_for_selector(input_file_wait_selector, timeout=15000)
 				page.wait_for_timeout(1000)
-			logger_config.info("File uploaded successfully")
+			self.logger.info("File uploaded successfully")
 
 			self.save_screenshot(page)
 
@@ -112,19 +127,19 @@ class BaseUIChat(ABC):
 			full_prompt = f"SYSTEM INSTRUCTIONS:: {system_prompt}\n\nUSER PROMPT:: {user_prompt}"
 
 		selectors = self.get_selectors()
-		logger_config.info("Filling user prompt into input...")
+		self.logger.info("Filling user prompt into input...")
 		input_field = page.locator(selectors['input']).first
 		input_field.fill(full_prompt)
-		logger_config.info("Prompt filled successfully")
+		self.logger.info("Prompt filled successfully")
 		page.wait_for_timeout(2000)
 		self.save_screenshot(page)
 
 	def send(self, page):
 		selectors = self.get_selectors()
-		logger_config.info("Clicking 'Send' button...")
+		self.logger.info("Clicking 'Send' button...")
 		send_button = page.locator(selectors['send_button']).first
 		send_button.click()
-		logger_config.info("'Send' button clicked")
+		self.logger.info("'Send' button clicked")
 		page.wait_for_timeout(2000)
 		page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
 		self.save_screenshot(page)
@@ -134,7 +149,7 @@ class BaseUIChat(ABC):
 
 	def wait_for_selector(self, page, i=0):
 		selectors = self.get_selectors()
-		logger_config.info(f"Waiting for results in '{selectors['wait_selector']}' container... iteration {i}")
+		self.logger.info(f"Waiting for results in '{selectors['wait_selector']}' container... iteration {i}")
 		page.wait_for_selector(
 			selectors['wait_selector'],
 			timeout=10000
@@ -160,11 +175,11 @@ class BaseUIChat(ABC):
 		selectors = self.get_selectors()
 		element = page.locator(selectors['result']).last
 		try:
-			logger_config.info("Scrolling into view...")
+			self.logger.info("Scrolling into view...")
 			element.scroll_into_view_if_needed()
-			logger_config.info("Scrolled into view")
+			self.logger.info("Scrolled into view")
 		except:
-			logger_config.info("Failed to scroll into view")
+			self.logger.info("Failed to scroll into view")
 
 		self.post_response_wait(page)
 		return element.inner_text()
@@ -172,8 +187,8 @@ class BaseUIChat(ABC):
 	def get_response(self, page):
 		result_text = self.get_response_text(page)
 		result_text = self.post_process_response(result_text)
-		logger_config.info("Result fetched successfully")
-		logger_config.info(f"Result from {self.get_docker_name()}: {result_text}")
+		self.logger.info("Result fetched successfully")
+		self.logger.info(f"Result from {self.get_docker_name()}: {result_text}")
 		self.save_screenshot(page)
 		return result_text
 
@@ -204,7 +219,7 @@ class BaseUIChat(ABC):
 			return self.get_response(page)
 
 		except Exception as e:
-			logger_config.error(f"Error during {self.get_docker_name()}: {e} {traceback.format_exc()}")
+			self.logger.error(f"Error during {self.get_docker_name()}: {e} {traceback.format_exc()}")
 			try:
 				self.save_screenshot(page)
 			except:
@@ -233,7 +248,7 @@ class BaseUIChat(ABC):
 			page = self.get_browser_manager().get_fresh_page()
 			return self.process(page, user_prompt, system_prompt, file_path)
 		except Exception as e:
-			logger_config.error(f"Error in chat_fresh: {e}")
+			self.logger.error(f"Error in chat_fresh: {e}")
 			pass
 
 		return None
@@ -243,7 +258,7 @@ class BaseUIChat(ABC):
 			try:
 				self.browser_manager.stop()
 			except Exception as e:
-				logger_config.error(f"Error while stopping browser manager: {e}")
+				self.logger.error(f"Error while stopping browser manager: {e}")
 			finally:
 				self.browser_manager = None
 
