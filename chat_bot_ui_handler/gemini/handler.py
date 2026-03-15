@@ -25,7 +25,7 @@ class GeminiUIChat(BaseUIChat):
 		page.wait_for_timeout(1000)
 		try:
 			page.wait_for_selector('button[data-test-id="bard-mode-menu-button"]', state="visible")
-		except: pass
+		except Exception: pass
 		self.force_click(page, 'button[data-test-id="bard-mode-menu-button"]')
 		dropdown_panel = page.locator('.menu-inner-container')
 		self.save_screenshot(page)
@@ -66,10 +66,10 @@ class GeminiUIChat(BaseUIChat):
 
 	def post_response_wait(self, page):
 		try: retry = int(os.getenv("POST_RESPONSE_WAIT_RETRY") or 50)
-		except: retry = 50
+		except Exception: retry = 50
 		for i in range(retry):
 			try:
 				self.logger.info(f"Waiting for response... iteration {i}")
 				page.wait_for_timeout(5000)
-			except:
+			except Exception:
 				pass

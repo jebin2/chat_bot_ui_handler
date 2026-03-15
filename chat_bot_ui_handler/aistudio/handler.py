@@ -34,7 +34,7 @@ class AIStudioUIChat(BaseUIChat):
 			close_button.click(timeout=4000)
 			page.wait_for_timeout(2000)
 			self.save_screenshot(page)
-		except:
+		except Exception:
 			pass
 
 		try:
@@ -45,7 +45,7 @@ class AIStudioUIChat(BaseUIChat):
 			page.keyboard.press("Escape")
 			page.wait_for_timeout(2000)
 			self.save_screenshot(page)
-		except:
+		except Exception:
 			pass
 
 	def _acknowledge_copyright(self, page) -> None:
@@ -115,7 +115,7 @@ class AIStudioUIChat(BaseUIChat):
 			if removal_selector:
 				try:
 					page.wait_for_selector(removal_selector, timeout=20000)
-				except:
+				except Exception:
 					pass
 
 			# Close dialogs
@@ -140,7 +140,7 @@ class AIStudioUIChat(BaseUIChat):
 			try:
 				page.wait_for_selector(selectors['wait_selector'], timeout=10000)
 				break
-			except: pass
+			except Exception: pass
 		self.save_screenshot(page)
 
 	def send(self, page):
@@ -157,10 +157,10 @@ class AIStudioUIChat(BaseUIChat):
 
 	def post_response_wait(self, page):
 		try: retry = int(os.getenv("POST_RESPONSE_WAIT_RETRY") or 50)
-		except: retry = 50
+		except Exception: retry = 50
 		for i in range(retry):
 			try:
 				self.logger.info(f"Waiting for response... iteration {i}")
 				page.wait_for_timeout(5000)
-			except:
+			except Exception:
 				pass

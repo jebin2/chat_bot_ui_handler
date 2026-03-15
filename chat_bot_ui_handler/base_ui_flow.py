@@ -178,7 +178,7 @@ class BaseUIChat(ABC):
 			self.logger.info("Scrolling into view...")
 			element.scroll_into_view_if_needed()
 			self.logger.info("Scrolled into view")
-		except:
+		except Exception:
 			self.logger.info("Failed to scroll into view")
 
 		self.post_response_wait(page)
@@ -222,14 +222,14 @@ class BaseUIChat(ABC):
 			self.logger.error(f"Error during {self.get_docker_name()}: {e} {traceback.format_exc()}")
 			try:
 				self.save_screenshot(page)
-			except:
+			except Exception:
 				pass
 
 	def quick_chat(self, user_prompt, system_prompt=None, file_path=None):
 		try:
 			with self.get_browser_manager() as page:
 				return self.process(page, user_prompt, system_prompt, file_path)
-		except:
+		except Exception:
 			pass
 
 		return None
@@ -238,7 +238,7 @@ class BaseUIChat(ABC):
 		try:
 			page = self.get_browser_manager().start()
 			return self.process(page, user_prompt, system_prompt, file_path)
-		except:
+		except Exception:
 			pass
 
 		return None
@@ -266,4 +266,4 @@ class BaseUIChat(ABC):
 		"""Destructor cleanup."""
 		try:
 			self.cleanup()
-		except: pass
+		except Exception: pass

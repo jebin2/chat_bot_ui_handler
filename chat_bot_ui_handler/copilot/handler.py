@@ -50,5 +50,5 @@ class CopilotUIChat(BaseUIChat):
 
             page.wait_for_timeout(2000)
             self.save_screenshot(page)
-        except: 
+        except Exception:
             pass

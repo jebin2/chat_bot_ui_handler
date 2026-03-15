@@ -57,10 +57,10 @@ class QwenUIChat(BaseUIChat):
 	# 			button.click()
 	# 			page.wait_for_timeout(5000)
 				
-	# 		except:
+	# 		except Exception:
 	# 			pass
 
 	# 		page.wait_for_timeout(2000)
 	# 		self.save_screenshot(page)
-	# 	except: 
+	# 	except Exception: 
 	# 		pass
