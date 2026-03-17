@@ -69,7 +69,7 @@ class GeminiUIChat(BaseUIChat):
 		except Exception: retry = 50
 		for i in range(retry):
 			try:
-				self.logger.info(f"Waiting for response... iteration {i}")
+				self.logger.info(f"Waiting for response... iteration {i}", overwrite=True)
 				page.wait_for_timeout(5000)
 			except Exception:
 				pass

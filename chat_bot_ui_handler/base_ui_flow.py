@@ -10,14 +10,14 @@ class _PrefixedLogger:
 	def __init__(self, prefix):
 		self._prefix = prefix
 
-	def info(self, msg):
-		logger_config.info(f"[{self._prefix}] {msg}")
+	def info(self, msg, overwrite=False):
+		logger_config.info(f"[{self._prefix}] {msg}", overwrite=overwrite)
 
-	def error(self, msg):
-		logger_config.error(f"[{self._prefix}] {msg}")
+	def error(self, msg, overwrite=False):
+		logger_config.error(f"[{self._prefix}] {msg}", overwrite=overwrite)
 
-	def debug(self, msg):
-		logger_config.debug(f"[{self._prefix}] {msg}")
+	def debug(self, msg, overwrite=False):
+		logger_config.debug(f"[{self._prefix}] {msg}", overwrite=overwrite)
 
 
 class BaseUIChat(ABC):
