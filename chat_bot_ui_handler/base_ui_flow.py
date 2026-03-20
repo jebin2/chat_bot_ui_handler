@@ -14,7 +14,7 @@ class _PrefixedLogger:
 		logger_config.info(f"[{self._prefix}] {msg}", overwrite=overwrite)
 
 	def error(self, msg, overwrite=False):
-		logger_config.error(f"[{self._prefix}] {msg}", overwrite=overwrite)
+		logger_config.error(f"[{self._prefix}] {msg}")
 
 	def debug(self, msg, overwrite=False):
 		logger_config.debug(f"[{self._prefix}] {msg}", overwrite=overwrite)
