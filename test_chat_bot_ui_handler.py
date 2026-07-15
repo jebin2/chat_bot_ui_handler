@@ -2,7 +2,7 @@ from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUICh
 from browser_manager.browser_manager import BrowserConfig
 import os
 
-source = BingUIChat
+source = GoogleAISearchChat
 config = BrowserConfig()
 # search works without login : GoogleAISearchChat, QwenUIChat, BingUIChat, BraveAISearch, DuckDuckGoAISearch
 # config.use_neko = False
@@ -26,7 +26,10 @@ result = baseUIChat.chat(
 		"details that would help someone understand the scene's context. "
 		"Keep your description to exactly 100 words or fewer."
 	),
-    system_prompt="follow user prompt",
+	system_prompt=(
+		"Follow the user prompt. Give the answer only — do not ask "
+		"follow-up questions or offer to expand on your response."
+	),
 	file_path="test.png"
 )
 # result = baseUIChat.chat(
