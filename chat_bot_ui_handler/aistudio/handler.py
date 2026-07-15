@@ -15,7 +15,7 @@ class AIStudioUIChat(BaseUIChat):
 		return True
 
 	def get_url(self):
-		return "https://aistudio.google.com/prompts/new_chat?model=gemini-3.1-pro-preview"
+		return "https://aistudio.google.com/prompts/new_chat?model=gemini-3.5-flash"
 
 	def get_selectors(self):
 		return {
