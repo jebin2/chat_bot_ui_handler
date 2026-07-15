@@ -19,6 +19,15 @@ class GoogleLoginInjector:
         self.email = os.getenv('GOOGLE_EMAIL') or os.getenv('OAUTH_EMAIL')
         self.password = os.getenv('GOOGLE_PASSWORD') or os.getenv('OAUTH_PASSWORD')
 
+    def _wait_visible(self, page, selector, timeout=15000):
+        # is_visible() does not auto-wait, so a field that is still rendering
+        # after a navigation reads as absent. Wait for it before deciding.
+        try:
+            page.wait_for_selector(selector, state="visible", timeout=timeout)
+            return True
+        except Exception:
+            return False
+
     def login(self, page):
         # Register a safe dialog handler to prevent crashes when JS dialogs
         # appear and vanish during navigation (race condition with auto-dismiss)
@@ -67,9 +76,8 @@ class GoogleLoginInjector:
             # Wait for email input and enter email (if NOT already prepopulated/skipped)
             logger_config.info("[GoogleLogin] Step 5: Looking for email input...")
             email_selector = '#identifierId'
-            if page.locator(email_selector).is_visible():
+            if self._wait_visible(page, email_selector):
                 logger_config.info("[GoogleLogin] Step 5a: Email input found. Entering email...")
-                page.wait_for_selector(email_selector)
                 page.wait_for_timeout(2000)
                 page.fill(email_selector, self.email)
                 
@@ -85,7 +93,7 @@ class GoogleLoginInjector:
             # Wait for password input and enter password
             logger_config.info("[GoogleLogin] Step 6: Looking for password input...")
             password_selector = 'input[type="password"]'
-            if page.locator(password_selector).is_visible():
+            if self._wait_visible(page, password_selector):
                 logger_config.info("[GoogleLogin] Step 6a: Password input found. Entering password...")
                 page.wait_for_timeout(2000)
                 page.fill(password_selector, self.password)
