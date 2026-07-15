@@ -17,6 +17,7 @@ classifiers = [
 dependencies = [
     "python-dotenv",
     "json-repair",
+    "requests",
     "custom_logger @ git+https://github.com/jebin2/custom_logger.git",
     "browser_manager @ git+https://github.com/jebin2/browser_manager.git",
     "jebin_lib @ git+https://github.com/jebin2/lib.git",
