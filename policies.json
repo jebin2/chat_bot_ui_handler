@@ -24,12 +24,10 @@
   "URLBlocklist": [
   ],
   "ExtensionInstallForcelist": [
-    "cjpalhdlnbpafiamejdnhcphjbkeiagm;https://clients2.google.com/service/update2/crx",
-    "mnjggcdmjocbbbhaepdhchncahnbgone;https://clients2.google.com/service/update2/crx"
+    "cjpalhdlnbpafiamejdnhcphjbkeiagm;https://clients2.google.com/service/update2/crx"
   ],
   "ExtensionInstallAllowlist": [
-    "cjpalhdlnbpafiamejdnhcphjbkeiagm",
-    "mnjggcdmjocbbbhaepdhchncahnbgone"
+    "cjpalhdlnbpafiamejdnhcphjbkeiagm"
   ],
   "ExtensionInstallBlocklist": [
     "*"

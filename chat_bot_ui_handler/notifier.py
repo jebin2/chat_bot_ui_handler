@@ -58,9 +58,46 @@ def _reply_file() -> str:
 	return os.getenv("CHAT_BOT_REPLY_FILE") or os.path.expanduser("~/.chat_bot_ui_reply.txt")
 
 
+def reply_web_url() -> str:
+	"""Page where an answer can be typed and published.
+
+	The iOS ntfy app has no reply action, so a notification that only says
+	"reply to this topic" is a dead end on an iPhone. This URL opens the topic
+	in a browser, where there is a send box.
+	"""
+	server = os.getenv("NTFY_SERVER", "https://ntfy.sh").rstrip("/")
+	return f"{server}/{_ntfy_reply_topic()}"
+
+
+def build_reply_instructions(preamble: str, timeout: int) -> str:
+	"""Spell out every way to send an answer back."""
+	minutes = max(1, timeout // 60)
+	return "\n".join([
+		preamble,
+		"",
+		"Send it back (any option works):",
+		f"  - tap this notification, or open {reply_web_url()}, then type the",
+		"    text in the send box at the bottom and publish it",
+		f"  - in the ntfy app, publish to the topic '{_ntfy_reply_topic()}'",
+		f"  - on the server, save it to: {_reply_file()}",
+		"",
+		f"Waiting {minutes} min for an answer.",
+	])
+
+
+def _header_safe(value: str) -> str:
+	"""Make a string usable as an HTTP header value.
+
+	ntfy carries the title/message in headers when a file is attached, and a
+	raw newline there makes the request invalid — ntfy renders a literal \\n
+	escape as a line break instead. Non-ASCII would also be rejected.
+	"""
+	value = value.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\\n")
+	return value.encode("ascii", "ignore").decode()
+
+
 def _ntfy_headers(title: str, priority: str) -> Dict[str, str]:
-	# ntfy reads these as ASCII; a non-ASCII title would 400 the request.
-	headers = {"Title": title.encode("ascii", "ignore").decode(), "Priority": priority}
+	headers = {"Title": _header_safe(title), "Priority": priority}
 	token = os.getenv("NTFY_TOKEN")
 	if token:
 		headers["Authorization"] = f"Bearer {token}"
@@ -186,14 +223,25 @@ class Notifier:
 		message: str,
 		image_path: str,
 		priority: str = "default",
+		click: Optional[str] = None,
+		actions: Optional[str] = None,
 	) -> bool:
 		"""Push the screenshot itself, so the challenge is readable on the phone
-		even when the on-screen number could not be scraped."""
+		even when the on-screen number could not be scraped.
+
+		`click` opens a URL when the notification is tapped and `actions` adds
+		buttons to it — the only way to get an answer back from iOS, which has
+		no reply action.
+		"""
 		try:
 			server = os.getenv("NTFY_SERVER", "https://ntfy.sh").rstrip("/")
 			headers = _ntfy_headers(title, priority)
 			headers["Filename"] = "2fa.png"
-			headers["Message"] = message.encode("ascii", "ignore").decode()
+			headers["Message"] = _header_safe(message)
+			if click:
+				headers["Click"] = click
+			if actions:
+				headers["Actions"] = actions
 			with open(image_path, "rb") as f:
 				resp = requests.put(
 					f"{server}/{_ntfy_topic()}",

@@ -127,20 +127,54 @@ class GoogleLoginInjector:
 	# ------------------------------------------------------------------ #
 
 	def _find_first(self, page, selectors):
+		selector = self._find_first_selector(page, selectors)
+		return page.locator(selector).first if selector else None
+
+	def _find_first_selector(self, page, selectors):
 		for selector in selectors:
 			try:
-				locator = page.locator(selector).first
-				if locator.is_visible(timeout=1000):
-					return locator
+				if page.locator(selector).first.is_visible(timeout=1000):
+					return selector
 			except Exception:
 				continue
 		return None
 
 	def _is_captcha(self, page):
 		return (
-			self._find_first(page, CAPTCHA_IMAGE_SELECTORS) is not None
-			and self._find_first(page, CAPTCHA_INPUT_SELECTORS) is not None
+			self._find_first_selector(page, CAPTCHA_IMAGE_SELECTORS) is not None
+			and self._find_first_selector(page, CAPTCHA_INPUT_SELECTORS) is not None
 		)
+
+	def _capture_captcha_image(self, page, image_selector, shot_path):
+		"""Screenshot the page showing the CAPTCHA.
+
+		The whole page rather than the image element: it survives markup changes
+		and shows the challenge in context.
+		"""
+		try:
+			page.locator(image_selector).first.scroll_into_view_if_needed(timeout=5000)
+		except Exception:
+			pass
+		# Screenshotting before the image has decoded yields an empty box.
+		try:
+			page.wait_for_function(
+				"""(sel) => {
+					const img = document.querySelector(sel);
+					return !!img && img.complete && img.naturalWidth > 0;
+				}""",
+				arg=image_selector,
+				timeout=10000,
+			)
+		except Exception:
+			logger_config.info("[GoogleLogin] CAPTCHA image did not report as loaded")
+		page.wait_for_timeout(500)
+
+		try:
+			page.screenshot(path=shot_path)
+			return True
+		except Exception as e:
+			logger_config.error(f"[GoogleLogin] Could not screenshot the CAPTCHA page: {e}")
+			return False
 
 	def _handle_captcha(self, page, state):
 		"""Send the CAPTCHA image to a human and type back what they reply.
@@ -148,36 +182,39 @@ class GoogleLoginInjector:
 		The challenge exists to prove a human is present, so it is deliberately
 		relayed rather than solved: a person reads the image and answers.
 		"""
-		image = self._find_first(page, CAPTCHA_IMAGE_SELECTORS)
+		image_selector = self._find_first_selector(page, CAPTCHA_IMAGE_SELECTORS)
 		text_input = self._find_first(page, CAPTCHA_INPUT_SELECTORS)
-		if image is None or text_input is None:
+		if image_selector is None or text_input is None:
 			return False
+
+		try: timeout = int(os.getenv("GOOGLE_CAPTCHA_TIMEOUT") or 300)
+		except Exception: timeout = 300
 
 		with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
 			shot_path = tmp.name
 		try:
-			try:
-				# Just the image: easier to read on a phone than the whole page.
-				image.screenshot(path=shot_path)
-			except Exception:
-				page.screenshot(path=shot_path)
+			self._capture_captcha_image(page, image_selector, shot_path)
 
 			reply_topic = notifier_mod._ntfy_reply_topic()
-			title = "Google CAPTCHA: reply with the text"
-			message = (
-				f"Sign-in as {self.email} hit a CAPTCHA. Read the image and publish "
-				f"the characters to the '{reply_topic}' ntfy topic."
+			title = "Google CAPTCHA: send the text back"
+			message = notifier_mod.build_reply_instructions(
+				f"Sign-in as {self.email} hit a CAPTCHA. Read the characters in the "
+				f"image above.",
+				timeout,
 			)
 			logger_config.info(f"[GoogleLogin] CAPTCHA detected. Asking a human via '{reply_topic}'")
-			if not self.notifier.notify_with_screenshot(title, message, shot_path, priority="urgent"):
+			if not self.notifier.notify_with_screenshot(
+				title, message, shot_path, priority="urgent",
+				# iOS ntfy cannot reply to a notification, so link to somewhere
+				# the answer can actually be typed.
+				click=notifier_mod.reply_web_url(),
+				actions=f"view, Send answer, {notifier_mod.reply_web_url()}, clear=true",
+			):
 				self.notifier.notify(title, message, priority="urgent")
 			_upload_screenshot_to_hf(page)
 		finally:
 			try: os.unlink(shot_path)
 			except Exception: pass
-
-		try: timeout = int(os.getenv("GOOGLE_CAPTCHA_TIMEOUT") or 300)
-		except Exception: timeout = 300
 
 		answer = self.notifier.wait_for_reply(timeout=timeout)
 		if not answer:
