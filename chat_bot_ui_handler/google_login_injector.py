@@ -80,7 +80,11 @@ class GoogleLoginInjector:
 		try:
 			page.wait_for_selector(selector, state="hidden", timeout=timeout)
 		except Exception:
-			pass
+			# Worth saying out loud: it means the submit did not take, and the
+			# page is about to be re-read with the same field still on it.
+			logger_config.info(
+				f"[GoogleLogin] '{selector}' still on screen {timeout}ms after submitting"
+			)
 		page.wait_for_timeout(2000)
 
 	def _read_state(self, page):
@@ -113,14 +117,16 @@ class GoogleLoginInjector:
 	def _click_if_present(self, page, selector, description):
 		try:
 			locator = page.locator(selector).first
-			if locator.is_visible(timeout=2000):
-				locator.click()
-				logger_config.info(f"[GoogleLogin] Clicked {description}")
-				page.wait_for_timeout(2000)
-				return True
-		except Exception:
-			pass
-		return False
+			if not locator.is_visible(timeout=2000):
+				return False
+			locator.click()
+			logger_config.info(f"[GoogleLogin] Clicked {description}")
+			page.wait_for_timeout(2000)
+			return True
+		except Exception as e:
+			# Not finding it is normal; failing to click one that is there is not.
+			logger_config.info(f"[GoogleLogin] Could not click {description}: {e}")
+			return False
 
 	# ------------------------------------------------------------------ #
 	# CAPTCHA
@@ -391,15 +397,29 @@ class GoogleLoginInjector:
 
 		email_submitted = False
 		password_submitted = False
+		started_at = time.monotonic()
+		unreadable = 0
 
 		while time.monotonic() < deadline:
 			state = self._read_state(page)
 			if state is None:
+				unreadable += 1
+				# One or two is a navigation in flight; a stream of them means
+				# the page is never settling, which is otherwise invisible.
+				if unreadable % 5 == 0:
+					logger_config.info(
+						f"[GoogleLogin] Page unreadable for {unreadable} checks "
+						f"(navigating?), still trying"
+					)
 				page.wait_for_timeout(1000)
 				continue
+			unreadable = 0
 
 			if self._is_signed_in(page, state):
-				logger_config.info(f"[GoogleLogin] Signed in successfully ({state['url']})")
+				elapsed = int(time.monotonic() - started_at)
+				logger_config.info(
+					f"[GoogleLogin] Signed in successfully after {elapsed}s ({state['url']})"
+				)
 				return True
 
 			if self._is_challenge(state):
