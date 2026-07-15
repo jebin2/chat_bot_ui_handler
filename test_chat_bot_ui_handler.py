@@ -2,7 +2,7 @@ from chat_bot_ui_handler import PerplexityUIChat, GoogleAISearchChat, GeminiUICh
 from browser_manager.browser_manager import BrowserConfig
 import os
 
-source = GoogleAISearchChat
+source = GeminiUIChat
 config = BrowserConfig()
 # search works without login : GoogleAISearchChat, QwenUIChat, BingUIChat, BraveAISearch, DuckDuckGoAISearch
 # config.use_neko = False
@@ -10,7 +10,7 @@ config = BrowserConfig()
 # config.headless = True
 # BraveAISearch - works in headless browser
 
-if source.__name__ == "MetaUIChat" or source.__name__ == "AIStudioUIChat" or source.__name__ == "QwenUIChat":
+if source.__name__ in ("MetaUIChat", "AIStudioUIChat", "QwenUIChat", "GeminiUIChat"):
 	# Set up additional docker flags
 	policy_path = os.path.join(os.getcwd(), 'policies.json')
 	additional_flags = []

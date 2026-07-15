@@ -1,10 +1,14 @@
 from chat_bot_ui_handler.base_ui_flow import BaseUIChat
 from custom_logger import logger_config
 import os
+import time
 
 class GeminiUIChat(BaseUIChat):
 	def get_docker_name(self):
 		return f"{self.config.docker_name}_gemini_ui_chat"
+
+	def need_google_login(self):
+		return True
 
 	def get_url(self):
 		return "https://gemini.google.com/"
@@ -17,59 +21,59 @@ class GeminiUIChat(BaseUIChat):
 			'result': 'message-content'
 		}
 
-	def set_model(self, page):
-		# Click the Bard mode menu button
+	def login(self, page):
+		"""No model to pick — the default one is used, so just wait for the input."""
 		page.keyboard.press("Escape")
 		page.wait_for_timeout(500)
-		page.keyboard.press("Escape")
-		page.wait_for_timeout(1000)
-		try:
-			page.wait_for_selector('button[data-test-id="bard-mode-menu-button"]', state="visible")
-		except Exception: pass
-		self.force_click(page, 'button[data-test-id="bard-mode-menu-button"]')
-		dropdown_panel = page.locator('.menu-inner-container')
-		self.save_screenshot(page)
-		page.wait_for_timeout(2000)
-
-		# Locate all enabled buttons inside the menu container
-		enabled_buttons = dropdown_panel.locator('button[aria-disabled="false"]')
-
-		# Click the last one
-		# last_button = enabled_buttons.nth(enabled_buttons.count() - 1)
-		# last_button.click(force=True)
-
-		# Click the first one
-		first_button = enabled_buttons.nth(0)
-		first_button.click(force=True)
-
+		page.wait_for_selector(self.get_selectors()['input'], state="visible", timeout=30000)
 		self.save_screenshot(page)
 
-	def login(self, page):
-		"""Custom setup after page load - set model"""
-		self.set_model(page)
+	def upload_file(self, page, file_path):
+		"""The upload button opens a native file chooser instead of exposing an
+		input[type=file], so the file has to be handed to the chooser event."""
+		if not file_path:
+			return
 
-	def show_input_file_tag(self, page):
-		page.locator('button[aria-label="Open upload file menu"]').click(force=True)
-		page.wait_for_timeout(1000)
-		self.save_screenshot(page)
-		page.locator('button[data-test-id="local-images-files-uploader-button"]').click(force=True)
+		self.logger.info(f"Uploading file: {file_path}")
+		page.locator('button[aria-label="Upload & tools"]').click(force=True)
 		page.wait_for_timeout(1000)
 		self.save_screenshot(page)
 
-	def wait_for_selector(self, page):
-		page.wait_for_function("""
-			() => {
-				const el = document.querySelectorAll('.avatar_spinner_animation')[0];
-				return el && el.style.visibility === 'hidden';
-			}
-		""", timeout=10000)
+		with page.expect_file_chooser() as fc_info:
+			page.locator('button[data-test-id="local-images-files-uploader-button"]').click(force=True)
+		fc_info.value.set_files(file_path)
 
-	def post_response_wait(self, page):
-		try: retry = int(os.getenv("POST_RESPONSE_WAIT_RETRY") or 50)
-		except Exception: retry = 50
-		for i in range(retry):
-			try:
-				self.logger.info(f"Waiting for response... iteration {i}", overwrite=True)
-				page.wait_for_timeout(5000)
-			except Exception:
-				pass
+		page.wait_for_timeout(5000)
+		self.logger.info("File uploaded successfully")
+		self.save_screenshot(page)
+
+	def wait_for_generation(self, page):
+		"""Gemini shows a stop button while streaming; it disappears when done.
+		Wait for that, then for the text to stop growing."""
+		try: timeout = int(os.getenv("GEMINI_GENERATION_TIMEOUT") or 300)
+		except Exception: timeout = 300
+
+		deadline = time.monotonic() + timeout
+		last_len = -1
+		stable_checks = 0
+		while time.monotonic() < deadline:
+			state = page.evaluate("""() => ({
+				generating: !!document.querySelector('button[aria-label="Stop response"]'),
+				length: (document.querySelector('model-response') || {innerText: ''}).innerText.length,
+			})""")
+
+			if not state['generating'] and state['length'] > 0 and state['length'] == last_len:
+				stable_checks += 1
+				if stable_checks >= 2:
+					self.logger.info("Response generation complete")
+					self.save_screenshot(page)
+					return
+			else:
+				stable_checks = 0
+
+			last_len = state['length']
+			self.logger.info(f"Waiting for response... {last_len} chars", overwrite=True)
+			page.wait_for_timeout(2000)
+
+		self.logger.error(f"Response did not settle within {timeout}s; using what is on screen")
+		self.save_screenshot(page)
